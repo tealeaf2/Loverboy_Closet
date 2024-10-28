@@ -1,7 +1,4 @@
 export default {
-  // Target: https://go.nuxtjs.dev/config-target
-  target: 'static',
-
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
     title: 'frontend',
@@ -23,8 +20,12 @@ export default {
   css: [
   ],
 
+  axios: {
+    baseURL: `http://localhost:5000/api`
+  },
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
   plugins: [
+    '~/plugins/api.js',
   ],
 
   // Auto import components: https://go.nuxtjs.dev/config-components
@@ -32,11 +33,15 @@ export default {
 
   // Modules for dev and build (recommended): https://go.nuxtjs.dev/config-modules
   buildModules: [
+    '@nuxtjs/tailwindcss',
   ],
 
   // Modules: https://go.nuxtjs.dev/config-modules
-  modules: [// https://go.nuxtjs.dev/bootstrap
-  'bootstrap-vue/nuxt', '@nuxtjs/tailwindcss'],
+  modules: [
+    // https://go.nuxtjs.dev/bootstrap
+    'bootstrap-vue/nuxt',
+    '@nuxtjs/axios',
+  ],
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {

@@ -1,3 +1,3 @@
 .DS_Store
-.venv
-vue-venv
+flask-env
+vue-nenv
