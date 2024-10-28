@@ -27,10 +27,10 @@ export default {
       posts: [],
     };
   },
-  async created() {
+  created() {
     let that = this;
     try {
-      await that.$api.get('/posts').then((response) => {
+      that.$api.get('/posts').then((response) => {
         that.posts = response.data;
       });
     } catch (error) {

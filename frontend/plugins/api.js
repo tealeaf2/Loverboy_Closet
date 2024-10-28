@@ -1,6 +1,6 @@
 export default function({$axios}, inject) {
   const api = $axios.create({
-    baseURL: 'http://127.0.0.1:5000/api'
+    baseURL: `${process.env.BASE_URL}${process.env.VUE_APP_API_PATH}`
   });
 
   // Inject to context as $api
