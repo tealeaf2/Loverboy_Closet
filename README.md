@@ -14,15 +14,16 @@ LoverboyCloset is a personalized fashion assistant designed to help users manage
 
 ```sh
 loverboy_closet
-├── README.md
 ├── backend
+├── deploy.sh
 ├── flask-env
 ├── frontend
-├── requirements.txt
-└── vue-nenv
+├── README.md
+├── requirements-local.txt
+└── requirements-prod.txt
 ```
 
-### Installation/Setup
+### Installation/Setup for development
 
 1. Clone the repo
 
@@ -56,11 +57,12 @@ npm run dev
 ```sh
 python -m venv flask-env
 source flask-env/bin/activate
-pip install -r requirements.txt
+pip install -r requirements-local.txt
 ```
 
-6. Go into `backend` folder and run flask
+6. Go into `backend` folder, initialize database, and start flask
 ```sh
 cd backend
-flask run
+python init_db.py
+python app.py
 ```
