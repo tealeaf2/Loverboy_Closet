@@ -28,7 +28,6 @@ export default {
     };
   },
   created() {
-    console.log(`API Base URL: ${process.env.BASE_URL}${process.env.VUE_APP_API_PATH}`);
     let that = this;
     try {
       that.$api.get('/posts').then((response) => {
@@ -38,6 +37,5 @@ export default {
       console.error("There was an error fetching posts:", error);
     }
   }
-
 }
 </script>
