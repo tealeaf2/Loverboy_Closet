@@ -53,7 +53,7 @@ export default {
     base: process.env.BASE_ROUTER || '/'
   },
   server: {
-    host: process.env.HOST || '0.0.0.0',
+    host: process.env.HOST || 'localhost',
     port: process.env.PORT || 3000
   },
 }
