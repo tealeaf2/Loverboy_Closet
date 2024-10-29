@@ -1,3 +1,6 @@
+-- WRITE DATABASE SCHEMAS HERE
+-- NOTE: There can be a lot of syntax differences between MySQL and sqlite3
+
 DROP TABLE IF EXISTS posts;
 
 CREATE TABLE posts (

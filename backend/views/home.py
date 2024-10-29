@@ -6,7 +6,12 @@ posts_bp = Blueprint('home', __name__)
 @posts_bp.route('/api/posts', methods=['GET'])
 def get_posts():
     conn = get_db_connection()
-    posts = conn.execute('SELECT * FROM posts').fetchall()
+    #cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor() 
+    cursor.execute('SELECT * FROM posts')
+    # cursor.execute('SELECT 1')
+    posts = cursor.fetchall()
+    cursor.close()
     conn.close()
     
     posts_list = [dict(post) for post in posts]
