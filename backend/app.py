@@ -1,15 +1,11 @@
-from flask import Flask, send_from_directory
-import os
+from flask import Flask
+from flask_cors import CORS
+from views.home import posts_bp
 
-app = Flask(__name__, static_folder='../dist')
+app = Flask(__name__)
+CORS(app)
 
-@app.route('/')
-def serve_index():
-    return send_from_directory(app.static_folder, 'index.html')
-
-@app.route('/<path:path>')
-def serve_static(path):
-    return send_from_directory(app.static_folder, path)
+app.register_blueprint(posts_bp)
 
 if __name__ == '__main__':
   app.debug=True
