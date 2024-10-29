@@ -27,7 +27,7 @@ def init_db(connection):
 
 def insert_posts(connection):
     cursor = connection.cursor()
-    insert_query = "INSERT INTO posts (title, content) VALUES (%s, %s)"
+    insert_query = "INSERT INTO posts (title, content) VALUES (?, ?)"
     cursor.execute(insert_query, ('First Post', 'Content for the first post'))
     cursor.execute(insert_query, ('Second Post', 'Content for the second post'))
     connection.commit()
