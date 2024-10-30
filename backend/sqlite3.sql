@@ -9,3 +9,14 @@ CREATE TABLE posts (
     title TEXT NOT NULL,
     content TEXT NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS products (
+    ProductID INTEGER PRIMARY KEY,
+    ProductName TEXT,
+    ProductBrand TEXT,
+    Gender TEXT,
+    Price INTEGER,
+    NumImages INTEGER,
+    Description TEXT,
+    PrimaryColor TEXT
+);
