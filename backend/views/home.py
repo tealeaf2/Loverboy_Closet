@@ -17,7 +17,8 @@ def get_posts():
     posts_list = [dict(post) for post in posts]
     return jsonify(posts_list)
 
-@posts_bp.route('/api/products', methods=['GET'])
+
+@posts_bp.route('/api/products', methods=['GET']) 
 def get_products():
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -28,3 +29,7 @@ def get_products():
 
     product_list = [dict(product) for product in product]
     return jsonify(product_list)
+
+
+# put post delete
+# 
