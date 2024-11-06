@@ -16,3 +16,15 @@ def get_posts():
     
     posts_list = [dict(post) for post in posts]
     return jsonify(posts_list)
+
+@posts_bp.route('/api/products', methods=['GET'])
+def get_products():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM products')
+    product = cursor.fetchall()
+    cursor.close()
+    conn.close()
+
+    product_list = [dict(product) for product in product]
+    return jsonify(product_list)
