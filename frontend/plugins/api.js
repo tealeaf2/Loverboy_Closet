@@ -1,9 +1,10 @@
 import { defineNuxtPlugin } from '#app'
 import axios from 'axios'
 
-export default defineNuxtPlugin((nuxtApp) => {
+export default defineNuxtPlugin(nuxtApp => {
+  const config = useRuntimeConfig()
   const api = axios.create({
-    baseURL: `${process.env.BASE_URL}${process.env.VUE_APP_API_PATH}`,
+    baseURL: `${config.public.baseURL}${config.public.apiPath}`,
   })
   nuxtApp.provide('api', api)
 });
