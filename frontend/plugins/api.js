@@ -1,8 +1,9 @@
-export default function({$axios}, inject) {
-  const api = $axios.create({
-    baseURL: `${process.env.BASE_URL}${process.env.VUE_APP_API_PATH}`
-  });
+import { defineNuxtPlugin } from '#app'
+import axios from 'axios'
 
-  // Inject to context as $api
-  inject('api', api);
-}
+export default defineNuxtPlugin((nuxtApp) => {
+  const api = axios.create({
+    baseURL: `${process.env.BASE_URL}${process.env.VUE_APP_API_PATH}`,
+  })
+  nuxtApp.provide('api', api)
+});
