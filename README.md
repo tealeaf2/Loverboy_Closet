@@ -36,7 +36,7 @@ https://github.com/tealeaf2/loverboy_closet.git
 2. Create a node environment and activate it
 
 ```sh
-nodeenv --node=18.20.0 vue-nenv
+nodeenv --node=18.18.0 vue-nenv
 source vue-nenv/bin/activate
 ```
 

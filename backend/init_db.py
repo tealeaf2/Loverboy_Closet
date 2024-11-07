@@ -26,15 +26,6 @@ def init_db(connection):
     insert_data_from_csv(connection, 'clothes.csv')
 
 
-def insert_posts(connection):
-    cursor = connection.cursor()
-    insert_query = "INSERT INTO posts (title, content) VALUES (?, ?)"
-    cursor.execute(insert_query, ('First Post', 'Content for the first post'))
-    cursor.execute(insert_query, ('Second Post', 'Content for the second post'))
-    connection.commit()
-    cursor.close()
-
-
 def insert_data_from_csv(connection, csv_file_path):
     cursor = connection.cursor()
     with open(csv_file_path, mode='r', encoding='utf-8') as file:
