@@ -1,8 +1,5 @@
 <script setup>
 import { ref } from 'vue';
-import Header from '../header.vue';
-import sidebar from './sidebar.vue';
-
 
   const isWearing = ref(false)
   const isFormVisible = ref(false)
@@ -21,7 +18,7 @@ import sidebar from './sidebar.vue';
 
 <template>
   <Header></Header>
-  <sidebar></sidebar>
+  <ClosetSidebar></ClosetSidebar>
   <div class="shell">
     <input type="checkbox" id="checkbox">
     <label for="checkbox"></label>
@@ -32,10 +29,10 @@ import sidebar from './sidebar.vue';
     <div v-for="item in list" class="box">
       <div class="top-bar"></div>
       <div class="nav">
-        <i @click="wear" :class="{wearing:isWearing}" class="fi fi-rr-shirt-long-sleeve"></i>
+        <i @click="wear" :class="{wearing: isWearing.value}" class="fi fi-rr-shirt-long-sleeve"></i>
       </div>
       <div class="pic">
-        <img src="../assets/picture/shirt1.png" alt="">
+        <img src="/picture/shirt1.png" alt="">
       </div>
       <div class="info">
         <strong>Waffle T-Shirt</strong>
@@ -97,17 +94,17 @@ import sidebar from './sidebar.vue';
     height: 70px;
     border-radius: 20px;
     background-color: var(--primary-color); /* Desired color */
-    mask: url(../assets/picture/search.png) no-repeat center;
+    mask: url(/picture/search.png) no-repeat center;
     mask-size: contain;
-    -webkit-mask: url(../assets/picture/search.png) no-repeat center;
+    -webkit-mask: url(/picture/search.png) no-repeat center;
     -webkit-mask-size: contain;
   }
   #checkbox:checked~label{
     border-radius: 10px;
     background-color: var(--primary-color); /* Desired color */
-    mask: url(../assets/picture/cross.png) no-repeat center;
+    mask: url(/picture/cross.png) no-repeat center;
     mask-size: contain;
-    -webkit-mask: url(../assets/picture/cross.png) no-repeat center;
+    -webkit-mask: url(/picture/cross.png) no-repeat center;
     -webkit-mask-size: contain;
     margin: 0 -5px;
   }
@@ -129,9 +126,9 @@ import sidebar from './sidebar.vue';
     width: 50px;
     height: 50px;
     background-color: var(--primary-color); /* Desired color */
-    mask: url(../assets/picture/plus.png) no-repeat center;
+    mask: url(/picture/plus.png) no-repeat center;
     mask-size: contain;
-    -webkit-mask: url(../assets/picture/plus.png) no-repeat center;
+    -webkit-mask: url(/picture/plus.png) no-repeat center;
     -webkit-mask-size: contain;
   }
 

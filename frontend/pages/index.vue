@@ -1,7 +1,4 @@
 <script setup>
-import Header from './header.vue';
-import swiper from './swiper.vue';
-import Button from './button.vue';
 import { ref } from 'vue';
 const scrollTarget = ref(null)
 function schrollDown(){
@@ -24,7 +21,7 @@ function schrollDown(){
     <Button @click="schrollDown" text="Dress Up"></Button>
   </div>
   <div ref="scrollTarget" >
-    <swiper class="swiper"></swiper>
+    <HomeSwiper class="swiper"></HomeSwiper>
   </div>
   
   
