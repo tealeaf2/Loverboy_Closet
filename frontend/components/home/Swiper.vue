@@ -1,23 +1,22 @@
 <script setup>
   import { computed, ref } from 'vue';
-  import card from './card.vue';
 
   const list= ref([
     {
-    photo:'./assets/picture/photo1.jpg',
-    outfit:'./assets/picture/outfit1.jpg'
+    photo:'/picture/photo1.jpg',
+    outfit:'/picture/outfit1.jpg'
     },
     {
-    photo:'./assets/picture/photo2.jpg',
-    outfit:'./assets/picture/outfit2.jpg'
+    photo:'/picture/photo2.jpg',
+    outfit:'/picture/outfit2.jpg'
     },
     {
-    photo:'./assets/picture/photo3.jpg',
-    outfit:'./assets/picture/outfit3.jpg'
+    photo:'/picture/photo3.jpg',
+    outfit:'/picture/outfit3.jpg'
     },
     {
-    photo:'./assets/picture/photo4.jpg',
-    outfit:'./assets/picture/outfit4.jpg'
+    photo:'/picture/photo4.jpg',
+    outfit:'/picture/outfit4.jpg'
     },
   ])
 
@@ -29,7 +28,7 @@
 <template>
   <div class="swiper">
     <div class="swiper-content">
-      <card v-for="(item,index) in dupList" class="swiper-item" :outfit="item.outfit" :photo="item.photo"></card>
+      <HomeCard v-for="(item,index) in dupList" class="swiper-item" :outfit="item.outfit" :photo="item.photo"></HomeCard>
     </div>
   </div>
 </template>

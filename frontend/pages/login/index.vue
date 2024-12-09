@@ -1,12 +1,10 @@
 <script setup>
-  import Header from './header.vue';
-  import loginBox from './login-box.vue';
 </script>
   
 <template>
   <Header></Header>
   <div class="login">
-    <loginBox></loginBox>
+    <LoginBox></LoginBox>
   </div>
   
 </template>

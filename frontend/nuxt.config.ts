@@ -3,10 +3,19 @@ export default defineNuxtConfig({
   compatibilityDate: '2024-04-03',
   devtools: { enabled: true },
 
+  css: [
+    '~/assets/css/base.css'
+  ],
+
   modules: [
     '@nuxt/eslint',
   ],
-
+  components: [
+    {
+      path: '~/components',
+      pathPrefix: true,
+    },
+  ],
   plugins: [
     '~/plugins/api.js',
     '~/plugins/element-plus.js', 
