@@ -28,7 +28,7 @@
       <div class="nav">
         <NuxtLink to="/closet">Closet</NuxtLink>
         <NuxtLink to="/recommend">Recommend</NuxtLink>
-        <NuxtLink to="/saved">Saved</NuxtLink>
+        <NuxtLink to="/outfits">Outfits</NuxtLink>
       </div>
     </template>
 
