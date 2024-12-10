@@ -11,8 +11,6 @@
       class="tag-color">
       {{ tag }}
     </el-tag>
-    <!-- <el-input v-if="inputVisible" ref="InputRef" v-model="inputValue" class="w-20" size="small"
-      @keyup.enter="handleInputConfirm" @blur="handleInputConfirm" /> -->
     <el-select 
       size="small"
       placeholder="+ New Tag"

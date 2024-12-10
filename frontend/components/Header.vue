@@ -29,7 +29,6 @@
         <NuxtLink to="/closet">Closet</NuxtLink>
         <NuxtLink to="/recommend">Recommend</NuxtLink>
         <NuxtLink to="/saved">Saved</NuxtLink>
-        <NuxtLink to="/help">Help</NuxtLink>
       </div>
     </template>
 
