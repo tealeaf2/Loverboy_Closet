@@ -2,13 +2,21 @@
 from . import db
 from sqlalchemy.sql import func
 
-class Post(db.Model):
-    __tablename__ = 'posts'
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    created = db.Column(db.DateTime(timezone=True), server_default=func.now())
-    title = db.Column(db.Text, nullable=False)
-    content = db.Column(db.Text, nullable=False)
+# Placeholder user model
+class User(db.Model):
+    __tablename__ = 'users'
+    user_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    email = db.Column(db.Text)
+    password = db.Column(db.Text)
 
+    assignments = db.relationship('UserProductOutfit', back_populates='user')
+
+class Outfit(db.Model):
+    __tablename__ = 'outfits'
+    outfit_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+
+    assignments = db.relationship('UserProductOutfit', back_populates='outfit')
+    
 class Product(db.Model):
     __tablename__ = 'products'
     ProductID = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -34,6 +42,17 @@ class Product(db.Model):
     dress = db.relationship('Dress', back_populates='product', uselist=False)
 
     season_style = db.relationship('SeasonStyle', back_populates='product', uselist=False)
+    assignments = db.relationship('UserProductOutfit', back_populates='product')
+
+class UserProductOutfit(db.Model):
+    __tablename__ = 'user_product_outfit'
+    user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), primary_key=True)
+    product_id = db.Column(db.Integer, db.ForeignKey('products.ProductID'), primary_key=True)
+    outfit_id = db.Column(db.Integer, db.ForeignKey('outfits.outfit_id'), primary_key=True)
+
+    user = db.relationship('User', back_populates='assignments')
+    product = db.relationship('Product', back_populates='assignments')
+    outfit = db.relationship('Outfit', back_populates='assignments')
 
 class Shirt(db.Model):
     __tablename__ = 'shirts'
