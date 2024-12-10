@@ -1,5 +1,6 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS
 
 db = SQLAlchemy()
 
@@ -11,7 +12,9 @@ def create_app():
     db.init_app(app)
 
     with app.app_context():
-        from . import routes
+        from .routes.home import home_bp
         db.create_all()
+        CORS(app)
+        app.register_blueprint(home_bp)
 
     return app
