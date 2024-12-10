@@ -1,60 +1,147 @@
-<script setup>
-import { ref } from 'vue';
-
-  const isWearing = ref(false)
-  const isFormVisible = ref(false)
-  function wear(){
-    isWearing.value=!isWearing.value
-  }
-  const list = ref([1,1,1,1,1])
-  function toggleForm(){
-    isFormVisible.value=!isFormVisible.value
-  }
-
-  function add(){
-
-  }
-</script>
-
 <template>
   <Header></Header>
-  <ClosetSidebar></ClosetSidebar>
+  <ClosetSidebar v-model="selectedTab"></ClosetSidebar>
   <div class="shell">
     <input type="checkbox" id="checkbox">
     <label for="checkbox"></label>
-    <input type="text" placeholder="search" class="input" id="input">
+    <input type="text" placeholder="search" class="input" id="input" v-model="searchQuery">
     <div @click="add" class="add"></div>
   </div>
   <div class="container">
-    <div v-for="item in list" class="box">
+    <div v-for="item in filteredClothes" :key="item.ProductID" class="box">
       <div class="top-bar"></div>
-      <div class="nav">
-        <i @click="wear" :class="{wearing: isWearing.value}" class="fi fi-rr-shirt-long-sleeve"></i>
-      </div>
       <div class="pic">
-        <img src="/picture/shirt1.png" alt="">
+        <img :src="item.image_url" alt="">
       </div>
       <div class="info">
-        <strong>Waffle T-Shirt</strong>
+        <strong>{{ item.productDisplayName }}</strong>
         <div class="buttons">
           
-          <a href="#"><i class="fi fi-rs-trash"></i>Delete</a>
-          <a href="#" @click.prevent="toggleForm"><i class="fi fi-rs-eye"></i>View</a>
-        </div>
-      </div>
-      <div v-if="isFormVisible" class="detail-box">
-        <div class="details">
-          <div class="type">
-            <strong>Type</strong>
-            <input type="text">
-          </div>
+          <a href="#" @click.prevent="deleteItem(item.ProductID)"><i class="fi fi-rs-trash"></i>Delete</a>
+          <a href="#" @click.prevent="toggleForm(item)"><i class="fi fi-rs-eye"></i>View</a>
         </div>
       </div>
     </div>
-    
-
+    <ClosetDrawer :drawer="isFormVisible" :selectedItem="selectedItem" v-if="isFormVisible" @close="closeForm"/>
   </div>
 </template>
+
+<script lang="ts" setup>
+import { ref, onMounted, computed } from 'vue';
+import { useNuxtApp } from '#app';
+const selectedTab = ref<string>('');
+const { $api } = useNuxtApp()
+const searchQuery = ref('');
+
+onMounted(() => {
+  getData();
+})
+
+const isFormVisible = ref(false);
+const selectedItem = ref<Product | null>(null);
+
+const toggleForm = (item: Product) => {
+  selectedItem.value = item;
+  isFormVisible.value = !isFormVisible.value;
+};
+
+const closeForm = () => {
+  isFormVisible.value = false;
+  selectedItem.value = null;
+};
+
+interface Product {
+  ProductID: number;
+  articleType: string;
+  baseColour: string;
+  favorite: boolean;
+  gender: string;
+  image_url: string;
+  masterCategory: string;
+  price: number;
+  productDisplayName: string;
+  season_style: {
+    Business: boolean;
+    Casual: boolean;
+    Fall: boolean;
+    Sport: boolean;
+    Spring: boolean;
+    Summer: boolean;
+    Winter: boolean;
+  };
+  subCategory: string;
+  usage: string;
+  year: number;
+}
+
+const clothes = ref<Product[]>([]);
+const categoryMapping = {
+  '0': 'All',
+  '1': 'Apparel',
+  '2': 'Footwear',
+  '3': 'Accessories'
+};
+
+const add = () => {
+
+}
+
+const getData = async () => {
+  try {
+    const response = await $api.get('/user/20/products');
+
+    clothes.value = response.data.products.map((product: any) => ({
+      ProductID: product.ProductID,
+      articleType: product.articleType,
+      baseColour: product.baseColour,
+      favorite: product.favorite,
+      gender: product.gender,
+      image_url: product.image_url,
+      masterCategory: product.masterCategory,
+      price: product.price,
+      productDisplayName: product.productDisplayName,
+      season_style: product.season_style,
+      subCategory: product.subCategory,
+      usage: product.usage,
+      year: product.year,
+    }))
+    console.log(clothes)
+  } catch (error) {
+    console.error('Error fetching products:', error);
+  }
+}
+
+const filteredClothes = computed(() => {
+  if (!selectedTab.value || selectedTab.value === '0') {
+    return clothes.value.filter(product =>
+      product.productDisplayName.toLowerCase().includes(searchQuery.value.toLowerCase())
+    );
+  }
+
+  return clothes.value
+    .filter(product => categoryMapping[selectedTab.value] === product.masterCategory)
+    .filter(product =>
+      product.productDisplayName.toLowerCase().includes(searchQuery.value.toLowerCase())
+    );
+})
+
+const deleteItem = async (productID: number) => {
+  const user = 20;
+  try{
+    const response = await $api.delete(`/user/${user}/products/${productID}`);
+    if (response.status === 200) {
+      console.log(`Product ${productID} successfully removed from user ${user}`);
+      clothes.value = clothes.value.filter(product => product.ProductID !== productID);
+
+    } else {
+      console.error('Failed to delete the product:', response.data);
+    } 
+  } catch (error) {
+    console.error('Error fetching products:', error);
+  }
+};
+
+</script>
 
 <style scoped>
   @import url('https://cdn-uicons.flaticon.com/2.6.0/uicons-regular-rounded/css/uicons-regular-rounded.css');
@@ -132,11 +219,9 @@ import { ref } from 'vue';
     -webkit-mask-size: contain;
   }
 
-
-
   .box{
     width: 266px;
-    height: 390px;
+    height: 420px;
     background-color: var(--secondary-color);
     box-shadow: 2px 2px 30px rgba(0,0,0,.05);
     display: flex;

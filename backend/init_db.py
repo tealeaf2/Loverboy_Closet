@@ -5,7 +5,7 @@ import re
 import random
 from dotenv import load_dotenv
 from app import create_app, db
-from app.model import Product, Shirt, Pant, Accessory, Shoe, Outerwear, Dress, SeasonStyle
+from app.model import Product, Shirt, Pant, Accessory, Shoe, Outerwear, Dress, SeasonStyle, User, UserProductOutfit
 
 load_dotenv()
 env = os.getenv('ENV')
@@ -65,6 +65,29 @@ def random_season_style():
         Business=bool(random.getrandbits(1)),
         Sport=bool(random.getrandbits(1))
     )
+
+def create_user_and_attach_clothing(user_id, num_items_per_category=50):
+    # Create the user
+    user = User(user_id=user_id, email=f"user{user_id}@example.com", password="securepassword")
+    db.session.add(user)
+
+    # Counter to assign unique outfit IDs
+    outfit_id_counter = 1
+
+    # Get 50 random items of each category and attach them to the user
+    categories = [Shirt, Pant, Accessory, Shoe, Outerwear, Dress]
+    for category in categories:
+        items = category.query.limit(num_items_per_category).all()
+        for item in items:
+            user_product_outfit = UserProductOutfit(
+                user_id=user_id,
+                product_id=item.ProductID,
+                outfit_id=outfit_id_counter  # Assign explicit ID
+            )
+            db.session.add(user_product_outfit)
+            outfit_id_counter += 1
+
+    db.session.commit()
 
 def insert_data_from_csv(csv_file_path):
     with open(csv_file_path, mode='r', encoding='utf-8') as file:
@@ -151,6 +174,9 @@ if __name__ == "__main__":
 
     insert_data_from_csv('dataset.csv')
     print("Database initialized and data inserted successfully!")
+
+    create_user_and_attach_clothing(user_id=20, num_items_per_category=50)
+    print("Made user with clothes")
     # print_table_data(Product, 'products')
     # print_table_data(Shirt, 'shirts')
     # print_table_data(Pant, 'pants')
