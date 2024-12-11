@@ -5,7 +5,7 @@
     <el-select 
       size="small"
       placeholder="+ New Tag"
-      style="width: 200px"
+      style="width: 200px; margin-right: 20px"
       @change="handleSelect"
     >
       <el-option
@@ -36,7 +36,7 @@
             <span class="left-span">Price: ${{ outfit.total_price }} (USD)</span>
             <span class="left-span">User: {{ outfit.user_id }}</span>
             <span class="left-span">Subscribed: {{ outfit.subscribe_count }}</span>
-            <el-button class="right-span sub-button">Subscribe</el-button>
+            <el-button class="right-span sub-button" @click="saveOutfit(outfit)">Subscribe</el-button>
           </div>
         </template>
         <div @click="toggleForm(outfit)">
@@ -66,6 +66,7 @@ import { onMounted, ref, computed } from 'vue'
 import options from './options'
 const { $api } = useNuxtApp()
 import { useNuxtApp } from '#app';
+import { ElNotification } from 'element-plus'
 
 const isClient = ref(false);
 const recommendations = ref<any[]>([]);
@@ -87,6 +88,25 @@ const toggleForm = (outfit: any) => {
 const closeForm = () => {
   isFormVisible.value = false;
   selectedProducts.value = [];
+};
+
+const saveOutfit = async (outfit: any) => {
+  try {
+    const payload = {
+      user_id: 20,
+      outfit_id: outfit.outfit_id
+    };
+
+    const response = await $api.post('/save_outfit', payload);
+
+    ElNotification({
+      title: 'Success',
+      message: 'Outfit added successfully',
+      type: 'success',
+    });
+  } catch (error) {
+    console.error(error)
+  }
 };
 
 const filteredOutfits = computed(() => {
