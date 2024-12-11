@@ -26,14 +26,37 @@
 
     <div v-if="isClient">
       <el-dialog v-model="dialogFormVisible" title="" width="1000">
-        <el-form :model="form">
-          Stuff
+        <el-form>
+          <el-input
+          v-model="input"
+          style="width: 80%"
+          placeholder="Search Clothes"
+          :prefix-icon="Search"
+        />
+        <div class="demo-pagination-block">
+          <el-pagination v-model:current-page="currentPage" :page-size="pageSize" :size="size" :disabled="disabled"
+            :background="background" layout="total, prev, pager, next, jumper" :total="filterTableData.length"/>
+        </div>
+
+        <el-skeleton v-if="loading" :rows="2" animated />
+        <el-table v-if="!loading" :data="paginatedClothes" style="width: 100%" @selection-change="handleSelectionChange">
+          <el-table-column type="selection" width="55" />
+          <el-table-column label="ProductID" property="ProductID" width="120px"/>
+          <el-table-column label="Name" property="productDisplayName" width="500px"/>
+          <el-table-column label="Category" property="masterCategory" width="150px"/>
+          <el-table-column label="Image" width="100px">
+            <template #default="scope">
+              <el-image style="width: 50%; height: 50%" :src="scope.row.image_url" />
+            </template>
+          </el-table-column>
+        </el-table>
+
         </el-form>
         <template #footer>
           <div class="dialog-footer">
-            <el-button class="cancel-button" @click="dialogFormVisible = false">Cancel</el-button>
-            <el-button class="confirm-button" primary @click="dialogFormVisible = false">
-              Confirm
+            <el-button class="cancel-button" @click="clearSelection">Cancel</el-button>
+            <el-button class="confirm-button" primary @click="addProducts">
+              Add
             </el-button>
           </div>
         </template>
@@ -44,32 +67,32 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, computed, reactive } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useNuxtApp } from '#app';
 const selectedTab = ref<string>('');
 const { $api } = useNuxtApp()
 const searchQuery = ref('');
+import type { ComponentSize } from 'element-plus'
+import { Search } from '@element-plus/icons-vue'
 
 onMounted(() => {
   getData();
+  getAllClothes();
   isClient.value = true;
 })
 
-const form = reactive({
-  name: '',
-  region: '',
-  date1: '',
-  date2: '',
-  delivery: false,
-  type: [],
-  resource: '',
-  desc: '',
-})
-
+const allClothes = ref<Product[]>([]);
 const isFormVisible = ref(false);
 const isClient = ref(false);
 const dialogFormVisible = ref(false)
 const selectedItem = ref<Product | null>(null);
+const currentPage = ref(1)
+const pageSize = ref(15);
+const size = ref<ComponentSize>('default')
+const background = ref(false)
+const disabled = ref(false)
+const input = ref('')
+const loading = ref(true)
 
 const toggleForm = (item: Product) => {
   selectedItem.value = item;
@@ -112,6 +135,88 @@ const categoryMapping = {
   '2': 'Footwear',
   '3': 'Accessories'
 };
+
+const filterTableData = computed(() =>
+  allClothes.value.filter(
+    (data) =>
+      !input.value ||
+      data.productDisplayName.toLowerCase().includes(input.value.toLowerCase())
+  )
+)
+
+const paginatedClothes = computed(() => {
+  const start = (currentPage.value - 1) * pageSize.value;
+  const end = start + pageSize.value;
+  return filterTableData.value.slice(start, end);
+});
+
+const selectedItems = ref<Product[]>([]);
+const handleSelectionChange = (selection: Product[]) => {
+  selectedItems.value = selection;
+  console.log('Selected Items:', selectedItems.value);
+};
+
+const clearSelection = () => {
+  dialogFormVisible.value = false;
+  selectedItems.value = [];
+}
+
+const addProducts = async () => {
+  dialogFormVisible.value = false;
+  const payload = selectedItems.value;
+  
+  try {
+    const response = await $api.post('/products', {
+      products: payload.map((product: Product) => ({
+        ProductID: product.ProductID,
+        articleType: product.articleType,
+        baseColour: product.baseColour,
+        favorite: product.favorite,
+        gender: product.gender,
+        image_url: product.image_url,
+        masterCategory: product.masterCategory,
+        price: product.price,
+        productDisplayName: product.productDisplayName,
+        season_style: product.season_style,
+        subCategory: product.subCategory,
+        usage: product.usage,
+        year: product.year,
+      })),
+    });
+
+    console.log('Products added successfully:', response.data);
+
+    selectedItems.value = [];
+  } catch(error) {
+    console.error('Error adding products:', error);
+  }
+}
+
+const getAllClothes = async () => {
+  try {
+    const response = await $api.get('/products');
+
+    allClothes.value = response.data.products.map((product: any) => ({
+      ProductID: product.ProductID,
+      articleType: product.articleType,
+      baseColour: product.baseColour,
+      favorite: product.favorite,
+      gender: product.gender,
+      image_url: product.image_url,
+      masterCategory: product.masterCategory,
+      price: product.price,
+      productDisplayName: product.productDisplayName,
+      season_style: product.season_style,
+      subCategory: product.subCategory,
+      usage: product.usage,
+      year: product.year,
+    }))
+    loading.value = false;
+    console.log(allClothes);
+  } catch (error) {
+    console.error('Error fetching products:', error);
+  }
+}
 
 const getData = async () => {
   try {
@@ -387,5 +492,11 @@ strong {
 .confirm-button {
   background-color: #c07858;
   color: white;
+}
+
+.demo-pagination-block {
+  margin-top: 10px;
+  margin-bottom: 10px;
+  color: var(--third-color);
 }
 </style>
