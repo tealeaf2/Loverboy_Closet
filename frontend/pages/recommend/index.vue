@@ -1,10 +1,6 @@
 <template>
   <Header />
 
-  <div>
-    select specific clothing
-  </div>
-
   <div v-if="isClient" class="tags">
     <el-select 
       size="small"
@@ -32,24 +28,100 @@
   </div>
 
 
-  <div>
-    based on your clothes
-  </div>
+  <el-space :fill="true" wrap class="items">
+      <el-card v-for="outfit in filteredOutfits" :key="outfit.outfit_id" class="card" lazy>
+        <template #header>
+          <div class="info">
+            <span class="left-span">Outfit: {{ outfit.outfit_id }}</span>
+            <span class="left-span">Price: ${{ outfit.total_price }} (USD)</span>
+            <span class="left-span">User: {{ outfit.user_id }}</span>
+            <span class="left-span">Subscribed: {{ outfit.subscribe_count }}</span>
+            <el-button class="right-span sub-button">Subscribe</el-button>
+          </div>
+        </template>
+        <div @click="toggleForm(outfit)">
+          <div v-for="product in outfit.products" 
+            :key="product.ProductID"
+            class="product-item"
+          >
+            <el-card style="max-width: 480px">
+              <el-image style="width: 150px; height: 150px" :src="product.image_url"/>
+              <div class="desc">{{ product.productDisplayName }}</div>
+              <div class="desc">${{ product.price }}</div>
+            </el-card>
+          </div>
+        </div>
+        <div class="footer">
+          Tags: <el-tag v-for="tag in outfit.true_tags" class="tag-color" size="small">{{ tag }}</el-tag>
+        </div>
+      </el-card>
+  </el-space>
+  <RecommendDrawer v-if="isFormVisible" :drawer="isFormVisible" :selectedProducts="selectedProducts" @close="closeForm"/>
 
 </template>
 
 
 <script lang="ts" setup>
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, computed } from 'vue'
 import options from './options'
+const { $api } = useNuxtApp()
+import { useNuxtApp } from '#app';
 
 const isClient = ref(false);
+const recommendations = ref<any[]>([]);
+const isFormVisible = ref(false);
+const selectedProducts = ref<any[]>([]);
 
 onMounted(() => {
+  getRecommendations();
   isClient.value = true;
 });
 
 const dynamicTags = ref<string[]>([])
+
+const toggleForm = (outfit: any) => {
+  selectedProducts.value = outfit.products;
+  isFormVisible.value = !isFormVisible.value;
+};
+
+const closeForm = () => {
+  isFormVisible.value = false;
+  selectedProducts.value = [];
+};
+
+const filteredOutfits = computed(() => {
+  if (dynamicTags.value.length === 0) {
+    return recommendations.value;
+  }
+  const tagsToFilter = dynamicTags.value.filter(tag => tag !== 'Cheap' && tag !== 'Expensive');
+
+  let filtered = recommendations.value.filter(outfit => {
+    return tagsToFilter.every(tag => outfit.true_tags.includes(tag));
+  });
+
+  if (dynamicTags.value.includes('Cheap')) {
+    filtered.sort((a, b) => a.total_price - b.total_price);
+  } else if (dynamicTags.value.includes('Expensive')) {
+    filtered.sort((a, b) => b.total_price - a.total_price);
+  }
+
+  return filtered;
+})
+
+const getRecommendations = async () => {
+  try {
+    const response = await $api.get('/outfits');
+    const outfits = response.data.outfits;
+
+    if (outfits && outfits.length > 0) {
+      recommendations.value = outfits;
+    } else {
+      recommendations.value = [];
+    }
+  } catch (error) {
+
+  }
+}
 
 const handleClose = (tag: string) => {
   dynamicTags.value.splice(dynamicTags.value.indexOf(tag), 1)
@@ -62,6 +134,49 @@ const handleSelect = (value: string) => {
 </script>
 
 <style>
+.card {
+  background-color: var(--secondary-color);
+}
+
+.footer {
+  color: var(--third-color);
+  letter-spacing: 1px;
+  font-size: 15px;
+  font-weight: 350; 
+}
+
+.desc {
+  background-color: white !important;
+  letter-spacing: 1px;
+  align-items: center;
+  font-size: 10px;
+  font-weight: 350; 
+}
+
+.product-item {
+  flex-wrap: wrap;
+  display: flex;
+  display: inline-flex;
+  margin: 10px;
+}
+
+.info {
+  display: flex;
+  color: var(--third-color);
+  letter-spacing: 1px;
+  align-items: center;
+  font-size: 17px;
+  font-weight: 350;
+}
+
+.left-span{
+  margin-right: 20px;
+}
+
+.right-span{
+  margin-left: auto;
+}
+
 .tags {
   padding-left: 20px;
   padding-right: 20px;
@@ -71,5 +186,19 @@ const handleSelect = (value: string) => {
   color: #838C8B;
   background-color: #ffffff;
   border-color: #838C8B;
+}
+
+.items {
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+.sub-button {
+  border: 1px solid #c07858;
+  border-radius: 4px;
+  font-size: 17px;
+  text-align: center;
+  line-height: 50px;
+  color: #c07858;
 }
 </style>

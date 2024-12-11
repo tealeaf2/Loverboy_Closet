@@ -86,4 +86,76 @@ def get_user_outfits(user_id):
 
 @recommend_bp.route('/api/outfits', methods=['GET'])
 def get_all_outfits():
-    pass
+    try:
+        outfits = db.session.query(Outfit).all()
+
+        if not outfits:
+            return jsonify({"error": "No outfits found"}), 404
+
+        result = []
+        for outfit in outfits:
+            product_categories = ['shirt', 'pant', 'accessory', 'shoe', 'outerwear', 'dress']
+            products_info = []
+            true_tags = set()  
+            total_price = 0
+
+            for category in product_categories:
+                product_obj = getattr(outfit, category)
+                if product_obj:
+                    total_price += product_obj.price
+
+                    season_style_dict = (
+                        {
+                            "Fall": product_obj.season_style.Fall,
+                            "Winter": product_obj.season_style.Winter,
+                            "Spring": product_obj.season_style.Spring,
+                            "Summer": product_obj.season_style.Summer,
+                            "Casual": product_obj.season_style.Casual,
+                            "Business": product_obj.season_style.Business,
+                            "Sport": product_obj.season_style.Sport
+                        }
+                        if product_obj.season_style
+                        else None
+                    )
+
+                    if season_style_dict:
+                        true_tags.update(
+                            [key for key, value in season_style_dict.items() if value]
+                        )
+
+                    product_dict = {
+                        "ProductID": product_obj.ProductID,
+                        "gender": product_obj.gender,
+                        "masterCategory": product_obj.masterCategory,
+                        "subCategory": product_obj.subCategory,
+                        "articleType": product_obj.articleType,
+                        "baseColour": product_obj.baseColour,
+                        "year": product_obj.year,
+                        "usage": product_obj.usage,
+                        "productDisplayName": product_obj.productDisplayName,
+                        "image_url": product_obj.image_url,
+                        "price": product_obj.price,
+                        "favorite": product_obj.favorite,
+                        "category": category,
+                        "season_style": season_style_dict
+                    }
+
+                    products_info.append(product_dict)
+
+            outfit_data = {
+                "outfit_id": outfit.outfit_id,
+                "user_id": outfit.user_id,
+                "subscribe_count": outfit.subscribe_count,
+                "total_price": round(total_price, 2),  # Include total price and round to 2 decimals
+                "products": products_info,
+                "true_tags": list(true_tags)  # Include only the tags that are True
+            }
+
+            result.append(outfit_data)
+
+        result.sort(key=lambda x: x.get('subscribe_count', 0), reverse=True)
+
+        return jsonify({"outfits": result}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500

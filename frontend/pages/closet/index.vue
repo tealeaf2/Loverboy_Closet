@@ -76,7 +76,7 @@ import { useNuxtApp } from '#app';
 const selectedTab = ref<string>('');
 const { $api } = useNuxtApp()
 const searchQuery = ref('');
-import { ComponentSize, ElNotification } from 'element-plus'
+import { ComponentSize, ElNotification, ElLoading } from 'element-plus'
 import { Search } from '@element-plus/icons-vue'
 
 onMounted(() => {
@@ -247,7 +247,6 @@ const getData = async () => {
       usage: product.usage,
       year: product.year,
     }))
-
   } catch (error) {
     console.error('Error fetching products:', error);
   }

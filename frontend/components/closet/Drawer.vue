@@ -96,7 +96,7 @@ const emitCloseEvent = () => {
 }
 
 .content {
-  background-color: var(--secondary-color);
+  background-color: var(--secondary-color) !important;
   width: 100%;
 }
 
