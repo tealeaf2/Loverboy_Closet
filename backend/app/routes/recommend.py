@@ -83,3 +83,7 @@ def get_user_outfits(user_id):
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@recommend_bp.route('/api/outfits', methods=['GET'])
+def get_all_outfits():
+    pass

@@ -2,7 +2,7 @@
 </script>
 
 <template>
-
+  <Header/>
 
 </template>
 
