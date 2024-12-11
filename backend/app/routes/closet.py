@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 from app.model import Product, SeasonStyle, ProductSubscription
 from app import db
 
@@ -102,6 +102,42 @@ def get_all_products():
 
 @closet_bp.route('/api/products', methods=['POST']) 
 def add_products_user():
-    user = 20
+    user_id = 20
+    try:
+        # Get the payload from the request
+        data = request.get_json()
+        if not data or 'products' not in data:
+            return jsonify({"error": "Invalid payload"}), 400
 
-    
+        # Extract the list of products from the payload
+        products = data['products']
+
+        if not isinstance(products, list):
+            return jsonify({"error": "Products should be a list"}), 400
+
+        added_products = []
+        for product_data in products:
+            product_id = product_data.get('ProductID')
+
+            existing_subscription = (
+                db.session.query(ProductSubscription)
+                .filter_by(user_id=user_id, product_id=product_id)
+                .first()
+            )
+
+            if existing_subscription:
+                continue
+
+            subscription = ProductSubscription(user_id=user_id, product_id=product_id)
+            db.session.add(subscription)
+            added_products.append(product_id)
+        db.session.commit()
+
+        return jsonify({
+            "message": f"Successfully added {len(added_products)} products for user {user_id}",
+            "added_products": added_products
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500    

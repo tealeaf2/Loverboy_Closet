@@ -1,16 +1,11 @@
 <template>
   <Header />
 
+  <div>
+    select specific clothing
+  </div>
+
   <div v-if="isClient" class="tags">
-    <el-tag 
-      v-for="tag in dynamicTags" 
-      :key="tag" 
-      closable 
-      :disable-transitions="false" 
-      @close="handleClose(tag)"
-      class="tag-color">
-      {{ tag }}
-    </el-tag>
     <el-select 
       size="small"
       placeholder="+ New Tag"
@@ -24,6 +19,21 @@
         :value="item.value"
       /> 
     </el-select>
+
+    <el-tag 
+      v-for="tag in dynamicTags" 
+      :key="tag" 
+      closable 
+      :disable-transitions="false" 
+      @close="handleClose(tag)"
+      class="tag-color">
+      {{ tag }}
+    </el-tag>
+  </div>
+
+
+  <div>
+    based on your clothes
   </div>
 
 </template>
@@ -31,6 +41,7 @@
 
 <script lang="ts" setup>
 import { onMounted, ref } from 'vue'
+import options from './options'
 
 const isClient = ref(false);
 
@@ -48,29 +59,6 @@ const handleSelect = (value: string) => {
     dynamicTags.value.push(value)
   }
 }
-
-const options = ref([
-  {
-    value: 'Option1',
-    label: 'Option1',
-  },
-  {
-    value: 'Option2',
-    label: 'Option2',
-  },
-  {
-    value: 'Option3',
-    label: 'Option3',
-  },
-  {
-    value: 'Option4',
-    label: 'Option4',
-  },
-  {
-    value: 'Option5',
-    label: 'Option5',
-  },
-])
 </script>
 
 <style>

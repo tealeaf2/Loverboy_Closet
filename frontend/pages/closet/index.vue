@@ -39,7 +39,11 @@
         </div>
 
         <el-skeleton v-if="loading" :rows="2" animated />
-        <el-table v-if="!loading" :data="paginatedClothes" style="width: 100%" @selection-change="handleSelectionChange">
+        <el-table v-if="!loading" 
+          :data="paginatedClothes" 
+          style="width: 100%" 
+          @selection-change="handleSelectionChange"
+        >
           <el-table-column type="selection" width="55" />
           <el-table-column label="ProductID" property="ProductID" width="120px"/>
           <el-table-column label="Name" property="productDisplayName" width="500px"/>
@@ -72,7 +76,7 @@ import { useNuxtApp } from '#app';
 const selectedTab = ref<string>('');
 const { $api } = useNuxtApp()
 const searchQuery = ref('');
-import type { ComponentSize } from 'element-plus'
+import { ComponentSize, ElNotification } from 'element-plus'
 import { Search } from '@element-plus/icons-vue'
 
 onMounted(() => {
@@ -183,8 +187,14 @@ const addProducts = async () => {
         year: product.year,
       })),
     });
-
+    clothes.value = [...clothes.value, ...selectedItems.value];
     console.log('Products added successfully:', response.data);
+
+    ElNotification ({
+      title: 'Success',
+      message: 'Items added successfully',
+      type: 'success',
+    })
 
     selectedItems.value = [];
   } catch(error) {
@@ -237,6 +247,7 @@ const getData = async () => {
       usage: product.usage,
       year: product.year,
     }))
+
   } catch (error) {
     console.error('Error fetching products:', error);
   }
