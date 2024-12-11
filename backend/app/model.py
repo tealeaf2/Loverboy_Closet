@@ -2,38 +2,67 @@
 from . import db
 from sqlalchemy.sql import func
 
-# Placeholder user model
 class User(db.Model):
     __tablename__ = 'users'
     user_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    email = db.Column(db.Text)
-    password = db.Column(db.Text)
+    email = db.Column(db.Text, unique=True, nullable=False)
+    password = db.Column(db.Text, nullable=False)
 
-    assignments = db.relationship('UserProductOutfit', back_populates='user')
+    # Outfits created by this user
+    outfits = db.relationship('Outfit', back_populates='user', cascade='all, delete-orphan')
+
+    # Outfits this user is subscribed to
+    subscribed_outfits = db.relationship('OutfitSubscription', back_populates='user')
+
+    # Products this user is subscribed to
+    subscribed_products = db.relationship('ProductSubscription', back_populates='user')
 
 class Outfit(db.Model):
     __tablename__ = 'outfits'
     outfit_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
 
-    assignments = db.relationship('UserProductOutfit', back_populates='outfit')
-    
+    # The creator (owner) of the outfit
+    user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
+    user = db.relationship('User', back_populates='outfits')
+
+    # Users subscribed to this outfit
+    subscribers = db.relationship('OutfitSubscription', back_populates='outfit', cascade='all, delete-orphan')
+
+    # Foreign keys for products that make up the outfit
+    shirt_id = db.Column(db.Integer, db.ForeignKey('products.ProductID'), nullable=True)
+    pant_id = db.Column(db.Integer, db.ForeignKey('products.ProductID'), nullable=True)
+    accessory_id = db.Column(db.Integer, db.ForeignKey('products.ProductID'), nullable=True)
+    shoe_id = db.Column(db.Integer, db.ForeignKey('products.ProductID'), nullable=True)
+    outerwear_id = db.Column(db.Integer, db.ForeignKey('products.ProductID'), nullable=True)
+    dress_id = db.Column(db.Integer, db.ForeignKey('products.ProductID'), nullable=True)
+
+    # Direct relationships to product categories
+    shirt = db.relationship('Product', foreign_keys=[shirt_id])
+    pant = db.relationship('Product', foreign_keys=[pant_id])
+    accessory = db.relationship('Product', foreign_keys=[accessory_id])
+    shoe = db.relationship('Product', foreign_keys=[shoe_id])
+    outerwear = db.relationship('Product', foreign_keys=[outerwear_id])
+    dress = db.relationship('Product', foreign_keys=[dress_id])
+
+    # Subscription count
+    subscribe_count = db.Column(db.Integer, default=1, nullable=False)
+
 class Product(db.Model):
     __tablename__ = 'products'
     ProductID = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    gender = db.Column(db.Text)
-    masterCategory = db.Column(db.Text)
-    subCategory = db.Column(db.Text)
-    articleType = db.Column(db.Text)
-    baseColour = db.Column(db.Text)
-    # season = db.Column(db.Text)
-    year = db.Column(db.Integer)
-    usage = db.Column(db.Text)
-    productDisplayName = db.Column(db.Text)
-    image_url = db.Column(db.Text)
-    price = db.Column(db.Float, default=0.0)
-    favorite = db.Column(db.Boolean, default=False)
+    gender = db.Column(db.Text, nullable=False)
+    masterCategory = db.Column(db.Text, nullable=False)
+    subCategory = db.Column(db.Text, nullable=False)
+    articleType = db.Column(db.Text, nullable=False)
+    baseColour = db.Column(db.Text, nullable=False)
+    year = db.Column(db.Integer, nullable=False)
+    usage = db.Column(db.Text, nullable=False)
+    productDisplayName = db.Column(db.Text, nullable=False)
+    image_url = db.Column(db.Text, nullable=False)
+    price = db.Column(db.Float, default=0.0, nullable=False)
+    favorite = db.Column(db.Boolean, default=False, nullable=False)
 
-    # Relationships to category-specific tables
+    # Category-specific relationships
     shirt = db.relationship('Shirt', back_populates='product', uselist=False)
     pant = db.relationship('Pant', back_populates='product', uselist=False)
     accessory = db.relationship('Accessory', back_populates='product', uselist=False)
@@ -42,17 +71,25 @@ class Product(db.Model):
     dress = db.relationship('Dress', back_populates='product', uselist=False)
 
     season_style = db.relationship('SeasonStyle', back_populates='product', uselist=False)
-    assignments = db.relationship('UserProductOutfit', back_populates='product')
 
-class UserProductOutfit(db.Model):
-    __tablename__ = 'user_product_outfit'
+    # Users subscribed to this product
+    subscribers = db.relationship('ProductSubscription', back_populates='product', cascade='all, delete-orphan')
+
+class OutfitSubscription(db.Model):
+    __tablename__ = 'outfit_subscriptions'
     user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), primary_key=True)
-    product_id = db.Column(db.Integer, db.ForeignKey('products.ProductID'), primary_key=True)
     outfit_id = db.Column(db.Integer, db.ForeignKey('outfits.outfit_id'), primary_key=True)
 
-    user = db.relationship('User', back_populates='assignments')
-    product = db.relationship('Product', back_populates='assignments')
-    outfit = db.relationship('Outfit', back_populates='assignments')
+    user = db.relationship('User', back_populates='subscribed_outfits')
+    outfit = db.relationship('Outfit', back_populates='subscribers')
+
+class ProductSubscription(db.Model):
+    __tablename__ = 'product_subscriptions'
+    user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), primary_key=True)
+    product_id = db.Column(db.Integer, db.ForeignKey('products.ProductID'), primary_key=True)
+
+    user = db.relationship('User', back_populates='subscribed_products')
+    product = db.relationship('Product', back_populates='subscribers')
 
 class Shirt(db.Model):
     __tablename__ = 'shirts'
@@ -90,19 +127,15 @@ class Dress(db.Model):
     Design = db.Column(db.Text, default=None)
     product = db.relationship('Product', back_populates='dress')
 
-
-# New model for seasons and style
 class SeasonStyle(db.Model):
     __tablename__ = 'season_styles'
     ProductID = db.Column(db.Integer, db.ForeignKey('products.ProductID'), primary_key=True)
 
-    # Seasons
     Fall = db.Column(db.Boolean, default=False)
     Winter = db.Column(db.Boolean, default=False)
     Spring = db.Column(db.Boolean, default=False)
     Summer = db.Column(db.Boolean, default=False)
 
-    # Styles
     Casual = db.Column(db.Boolean, default=False)
     Business = db.Column(db.Boolean, default=False)
     Sport = db.Column(db.Boolean, default=False)
