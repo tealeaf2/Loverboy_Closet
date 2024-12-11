@@ -14,9 +14,11 @@ def create_app():
     with app.app_context():
         from .routes.home import home_bp
         from .routes.closet import closet_bp
+        from .routes.recommend import recommend_bp
         db.create_all()
         CORS(app)
         app.register_blueprint(home_bp)
         app.register_blueprint(closet_bp)
+        app.register_blueprint(recommend_bp)
 
     return app
