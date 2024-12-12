@@ -27,9 +27,11 @@
     </el-tag>
   </div>
 
+  <el-pagination v-model:current-page="currentPage" :page-size="pageSize" :size="size"
+    layout="prev, pager, next, jumper" :total="filteredOutfits.length" class="demo-pagination-block"/>
 
   <el-space :fill="true" wrap class="items">
-      <el-card v-for="outfit in filteredOutfits" :key="outfit.outfit_id" class="card" lazy>
+      <el-card v-for="outfit in paginatedClothes" :key="outfit.outfit_id" class="card" lazy>
         <template #header>
           <div class="info">
             <span class="left-span">Outfit: {{ outfit.outfit_id }}</span>
@@ -66,12 +68,15 @@ import { onMounted, ref, computed } from 'vue'
 import options from './options'
 const { $api } = useNuxtApp()
 import { useNuxtApp } from '#app';
-import { ElNotification } from 'element-plus'
+import { ElNotification, ComponentSize } from 'element-plus'
 
 const isClient = ref(false);
 const recommendations = ref<any[]>([]);
 const isFormVisible = ref(false);
 const selectedProducts = ref<any[]>([]);
+const currentPage = ref(1)
+const pageSize = ref(15);
+const size = ref<ComponentSize>('default')
 
 onMounted(() => {
   getRecommendations();
@@ -79,6 +84,12 @@ onMounted(() => {
 });
 
 const dynamicTags = ref<string[]>([])
+
+const paginatedClothes = computed(() => {
+  const start = (currentPage.value - 1) * pageSize.value;
+  const end = start + pageSize.value;
+  return filteredOutfits.value.slice(start, end);
+});
 
 const toggleForm = (outfit: any) => {
   selectedProducts.value = outfit.products;
@@ -90,6 +101,7 @@ const closeForm = () => {
   selectedProducts.value = [];
 };
 
+
 const saveOutfit = async (outfit: any) => {
   try {
     const payload = {
@@ -98,7 +110,7 @@ const saveOutfit = async (outfit: any) => {
     };
 
     const response = await $api.post('/save_outfit', payload);
-
+    getRecommendations();
     ElNotification({
       title: 'Success',
       message: 'Outfit added successfully',
@@ -220,5 +232,12 @@ const handleSelect = (value: string) => {
   text-align: center;
   line-height: 50px;
   color: #c07858;
+}
+
+.demo-pagination-block {
+  margin: 10px;
+  color: var(--third-color);
+  --el-pagination-bg-color: var(--secondary-color);
+  --el-pagination-button-disabled-bg-color: var(--secondary-color); 
 }
 </style>

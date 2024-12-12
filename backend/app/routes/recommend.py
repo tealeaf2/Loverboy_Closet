@@ -8,7 +8,14 @@ recommend_bp = Blueprint('recommend', __name__)
 @recommend_bp.route('/api/outfits', methods=['GET'])
 def get_all_outfits():
     try:
-        outfits = db.session.query(Outfit).all()
+        user_id = 20
+        if not user_id:
+            return jsonify({"error": "User ID is required"}), 400
+
+        subscribed_outfit_ids = db.session.query(OutfitSubscription.outfit_id).filter_by(user_id=user_id).all()
+        subscribed_outfit_ids = {id[0] for id in subscribed_outfit_ids}  # Convert to set for faster lookup
+
+        outfits = db.session.query(Outfit).filter(~Outfit.outfit_id.in_(subscribed_outfit_ids)).all()
 
         if not outfits:
             return jsonify({"error": "No outfits found"}), 404
@@ -80,6 +87,7 @@ def get_all_outfits():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
     
 
 @recommend_bp.route('/api/save_outfit', methods=['POST'])
@@ -98,12 +106,13 @@ def save_outfit():
         outfit = Outfit.query.get(outfit_id)
         if not outfit:
             return jsonify({'error': 'Outfit does not exist'}), 404
-
+        
         # Check if the subscription already exists
         existing_subscription = OutfitSubscription.query.filter_by(user_id=user_id, outfit_id=outfit_id).first()
         if existing_subscription:
             return jsonify({'message': 'User is already subscribed to this outfit.'}), 200
 
+        outfit.subscribe_count += 1
         # Create a new subscription
         subscription = OutfitSubscription(user_id=user_id, outfit_id=outfit_id)
         db.session.add(subscription)

@@ -21,7 +21,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, defineProps, computed } from 'vue';
+import { ref, computed } from 'vue';
 import { Edit } from '@element-plus/icons-vue'
 import { useNuxtApp } from '#app';
 import { ElNotification } from 'element-plus';

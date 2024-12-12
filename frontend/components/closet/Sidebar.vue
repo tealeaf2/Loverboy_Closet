@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, defineModel } from "vue"
+import { ref, onMounted } from "vue"
 
 const activeTab = ref(''); 
 
