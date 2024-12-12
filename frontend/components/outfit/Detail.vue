@@ -44,9 +44,6 @@ onMounted(() => {
 const openDialog = ref(props.dialog);
 const outfit = ref(props.selectedOutfit);
 
-
-
-
 const deleteProduct = async (product: any) => {
   const user = 20;
   try {

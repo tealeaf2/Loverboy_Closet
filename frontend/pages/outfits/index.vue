@@ -13,18 +13,20 @@
                   <span class="left-span">Price: ${{ outfit.total_price }} (USD)</span>
                   <span class="left-span">User: {{ outfit.user_id }}</span>
                   <span class="left-span">Subscribed: {{ outfit.subscribe_count }}</span>
-                  <el-button class="right-span sub-button">Edit</el-button>
+                  <el-button class="right-span sub-button" @click="toggleEdit(outfit)">Edit</el-button>
                   <el-button class="right-span delete-button" @click="deleteOutfit(outfit.outfit_id)">Delete</el-button>
                 </div>
               </template>
-              <div @click="">
+              <div @click="toggleDetail(outfit)">
                 <div v-for="product in outfit.products" 
                   :key="product.ProductID"
                   class="product-item"
                 >
                   <el-card style="max-width: 480px">
                     <el-image style="width: 150px; height: 150px" :src="product.image_url"/>
-                    <div class="desc">{{ product.productDisplayName }}</div>
+                    <div class="desc">
+                      {{ product.productDisplayName }} <el-icon> <View /> </el-icon>
+                    </div>
                     <div class="desc">${{ product.price }}</div>
                   </el-card>
                 </div>
@@ -36,6 +38,8 @@
           </el-space>
 
         </el-tab-pane>
+        <OutfitEdit v-if="openEdit" :edit="openEdit" :selectedOutfit="selectedOutfit" @close="closeEdit"/>
+
         <el-tab-pane label="Saved">
           <el-space :fill="true" wrap class="items">
             <el-card v-for="outfit in subscribedOutfits" :key="outfit.outfit_id" class="card" lazy>
@@ -55,8 +59,9 @@
                 >
                   <el-card style="max-width: 480px">
                     <el-image style="width: 150px; height: 150px" :src="product.image_url"/>
-                    <div class="desc">{{ product.productDisplayName }}</div>
+                    <div class="desc">{{ product.productDisplayName }} <el-icon> <View /> </el-icon></div>
                     <div class="desc">${{ product.price }}</div>
+
                   </el-card>
                 </div>
                 <div class="footer">
@@ -65,10 +70,8 @@
               </div>
             </el-card>
           </el-space>
-
-          <OutfitDetail v-if="openDialog" :dialog="openDialog" :selectedOutfit="selectedOutfit" @close="closeForm"/>
-
         </el-tab-pane>
+        <OutfitDetail v-if="openDialog" :dialog="openDialog" :selectedOutfit="selectedOutfit" @close="closeForm"/>
       </el-tabs>
     </el-space>
   </div>
@@ -79,17 +82,29 @@ import { ref, onMounted } from "vue"
 const { $api } = useNuxtApp()
 import { useNuxtApp } from '#app';
 import { ElNotification } from 'element-plus'
+import { View } from '@element-plus/icons-vue'
 
 const userOutfits = ref<any[]>([]);
 const subscribedOutfits = ref<any[]>([]);
 const selectedOutfit = ref<any[]>([]);
 const openDialog = ref(false);
+const openEdit = ref(false);
 
 onMounted(() => {
   getCreatedOutfits();
   getSubscribedOutfits();
 });
 
+
+const toggleEdit = (outfit: any) => {
+  selectedOutfit.value = outfit;
+  openEdit.value = !openEdit.value;
+}
+
+const closeEdit = () => {
+  selectedOutfit.value = [];
+  openEdit.value = false;
+}
 const toggleDetail = (outfit: any) => {
   selectedOutfit.value = outfit;
   openDialog.value = !openDialog.value;
