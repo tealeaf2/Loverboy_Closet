@@ -7,6 +7,9 @@ closet_bp = Blueprint('closet', __name__)
 @closet_bp.route('/api/user/<int:user_id>/products', methods=['GET'])
 def get_user_products(user_id):
     try:
+        # Predefined product categories
+        product_categories = ['shirt', 'pant', 'accessory', 'shoe', 'outerwear', 'dress']
+
         # Query all products the user is subscribed to
         products = (
             db.session.query(Product)
@@ -20,15 +23,21 @@ def get_user_products(user_id):
 
         result = []
         for product in products:
-            # Convert product attributes to a dictionary
             product_dict = {c.name: getattr(product, c.name) for c in product.__table__.columns}
 
-            # Include related SeasonStyle data if it exists
+            category = None
+            for cat in product_categories:
+                if getattr(product, cat):
+                    category = cat
+                    break 
+
+            product_dict['category'] = category
+
             if product.season_style:
                 season_style_dict = {
                     c.name: getattr(product.season_style, c.name)
                     for c in product.season_style.__table__.columns
-                    if c.name != 'ProductID'  # Exclude foreign key
+                    if c.name != 'ProductID'
                 }
                 product_dict["season_style"] = season_style_dict
             else:
@@ -40,6 +49,7 @@ def get_user_products(user_id):
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 
 @closet_bp.route('/api/user/<int:user_id>/products/<int:product_id>', methods=['DELETE'])
@@ -100,6 +110,7 @@ def get_all_products():
         # Handle errors gracefully
         return jsonify({"success": False, "error": str(e)}), 500
 
+
 @closet_bp.route('/api/products', methods=['POST']) 
 def add_products_user():
     user_id = 20
@@ -140,4 +151,4 @@ def add_products_user():
 
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": str(e)}), 500    
+        return jsonify({"error": str(e)}), 500

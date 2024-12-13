@@ -11,11 +11,14 @@ function handleTabClick(tab) {
 </script>
 
 <template>
-  <el-tabs v-model="activeTab" tab-position="left" style="height: 200px" class="demo-tabs container" @tab-click="handleTabClick">
+  <el-tabs v-model="activeTab" tab-position="left" style="height: 300px" class="demo-tabs container" @tab-click="handleTabClick">
     <el-tab-pane label="All"></el-tab-pane>
-    <el-tab-pane label="Apparel"></el-tab-pane>
-    <el-tab-pane label="Footwear"></el-tab-pane>
+    <el-tab-pane label="Shirts"></el-tab-pane>
+    <el-tab-pane label="Pants"></el-tab-pane>
     <el-tab-pane label="Accessories"></el-tab-pane>
+    <el-tab-pane label="Shoes"></el-tab-pane>
+    <el-tab-pane label="Outerwear"></el-tab-pane>
+    <el-tab-pane label="Dress"></el-tab-pane>
   </el-tabs>
 </template>
 

@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request
-from app.model import Outfit, Product, OutfitSubscription, ProductSubscription
+from app.model import Outfit, Product, OutfitSubscription, ProductSubscription, User
 from app import db
 
 outfits_bp = Blueprint('outfits', __name__)
@@ -276,4 +276,60 @@ def get_products_of_outfit(outfit_id):
         }), 200
 
     except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+@outfits_bp.route('/api/save-outfit', methods=['POST'])
+def add_save_outfit():
+    user_id = 20
+    try:
+        # Get the payload from the request
+        data = request.get_json()
+        if not data or 'outfit' not in data:
+            return jsonify({"error": "Invalid payload"}), 400
+
+        outfit_data = data['outfit']
+        # Check if the user exists
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+        
+        # Get the outfit ID from the payload if it's an update
+        outfit_id = outfit_data.get('outfit_id', None)
+        
+        if outfit_id:
+            # Update the existing outfit if outfit_id is provided
+            outfit = Outfit.query.filter_by(outfit_id=outfit_id, user_id=user_id).first()
+            if not outfit:
+                return jsonify({"error": "Outfit not found for this user"}), 404
+        else:
+            # Create a new outfit if outfit_id is not provided
+            outfit = Outfit(user_id=user_id)
+            db.session.add(outfit)
+        
+        # Assign products to the outfit
+        shirt_id = outfit_data.get('shirt_id')
+        pant_id = outfit_data.get('pant_id')
+        accessory_id = outfit_data.get('accessory_id')
+        shoe_id = outfit_data.get('shoe_id')
+        outerwear_id = outfit_data.get('outerwear_id')
+        dress_id = outfit_data.get('dress_id')
+
+        outfit.shirt_id = shirt_id
+        outfit.pant_id = pant_id
+        outfit.accessory_id = accessory_id
+        outfit.shoe_id = shoe_id
+        outfit.outerwear_id = outerwear_id
+        outfit.dress_id = dress_id
+        
+        # Commit the changes to the database
+        db.session.commit()
+
+        # Return success response
+        return jsonify({
+            "message": f"Outfit {'updated' if outfit_id else 'created'} successfully",
+            "outfit_id": outfit.outfit_id
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
         return jsonify({"error": str(e)}), 500

@@ -4,8 +4,11 @@
     <el-space :fill="true" wrap class="content">
       <el-tabs type="border-card" class="whole_table">
         <el-tab-pane label="Personal">
-          <el-space :fill="true" wrap class="items">
-            
+          <div style="margin-left: 20px; margin-bottom: 10px">
+            <el-button class="right-span delete-button" @click="toggleEdit([])">Create</el-button> 
+            Create your own outfits!
+          </div>
+          <el-space :fill="true" wrap class="items">  
             <el-card v-for="outfit in userOutfits" :key="outfit.outfit_id" class="card" lazy>
               <template #header>
                 <div class="info">
@@ -97,13 +100,18 @@ onMounted(() => {
 
 
 const toggleEdit = (outfit: any) => {
-  selectedOutfit.value = outfit;
+  if (outfit.length === 0) {
+    selectedOutfit.value = [];
+  } else {
+    selectedOutfit.value = outfit;
+  }
   openEdit.value = !openEdit.value;
-}
+};
 
 const closeEdit = () => {
   selectedOutfit.value = [];
   openEdit.value = false;
+  getCreatedOutfits();
 }
 const toggleDetail = (outfit: any) => {
   selectedOutfit.value = outfit;
@@ -157,7 +165,6 @@ const getCreatedOutfits = async() => {
   try {
     const response = await $api.get(`/user/20/outfits`);
     userOutfits.value = response.data.outfits || []; 
-    console.log(userOutfits)
   } catch (error) {
     console.error("Failed to fetch outfits:", error);
   }
@@ -168,7 +175,6 @@ const getSubscribedOutfits = async () => {
   try {
     const response = await $api.get(`/subscribed-outfits`);
     subscribedOutfits.value = response.data.subscribed_outfits;
-    console.log(subscribedOutfits);
   } catch (error) {
     console.error("Failed to fetch subscribed outfits:", error);
   }

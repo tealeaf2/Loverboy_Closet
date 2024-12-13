@@ -1,60 +1,20 @@
-<!-- <template>
-  <el-dialog v-model="openEdit" title="" width="1000" @close="emitCloseEvent" class="edit-box">
-    <el-row>
-      <el-col :span="12" class="left-col">
-        <el-card class="design" style="width: 100%;">
-          <div class="product-container" v-for="product in outfit" :key="product.ProductID">
-            <div class="product-content">
-              <div class="upload-mimic">
-                <img :src="product.image_url" alt="Product image" class="product-image" />
-                <div class="hover-overlay">
-                  <el-icon style="margin: 5px;">
-                    <ZoomIn />
-                  </el-icon>
-                  <el-icon style="margin: 5px;" @click="removeProduct(product.ProductID)">
-                    <Delete />
-                  </el-icon>
-                </div>
-              </div>
-              <div class="product-info">
-                <div>{{ product.productDisplayName }}</div>
-                <div>{{ product.masterCategory }}</div>
-                <div>{{ product.usage }}</div>
-                <div>{{ product.year }}</div>
-                <div>${{ product.price }} (USD)</div>
-              </div>
-            </div>
-          </div>
-          <el-tag v-for="tag in outfitTags" :key="tag" class="tag-color" size="small">{{ tag }}</el-tag>
-        </el-card>
-      </el-col>
-      <el-col :span="12" class="right-col">
-        Clothing Options
-      </el-col>
-    </el-row>
-    <div class="edit-footer">
-      <el-button class="cancel-button" @click="closeEdit">Cancel</el-button>
-      <el-button class="confirm-button" primary @click="">
-        Save
-      </el-button>
-    </div>
-  </el-dialog>
-</template> -->
-
 <template>
-  <el-dialog v-model="openEdit" title="" width="1000" @close="emitCloseEvent" class="edit-box">
+  <el-dialog v-model="openEdit" title="" width="1000" @close="emitCloseEvent" class="edit-box" :before-close="handleClose">
     <el-row>
       <el-col :span="12" class="left-col">
         <el-card class="design" style="width: 100%;">
           <div class="product-container" v-for="category in categories" :key="category.name">
             <div class="product-content">
-              <div class="upload-mimic">
-                <img :src="category.product ? category.product.image_url : ''" alt="Product image" class="product-image" />
-                <div class="hover-overlay">
-                  <el-icon style="margin: 5px;">
-                    <ZoomIn />
-                  </el-icon>
-                  <el-icon style="margin: 5px;" @click="removeProduct(category)">
+              <div 
+                :class="['upload-mimic', { 'selected': category.name === selectedCategory }]" 
+                @click="category.product ? null : selectTable(category.name)"
+              >
+                <img v-if="category.product" :src="category.product.image_url" alt="Product image" class="product-image" />
+                <div v-else>
+                  <el-icon> <Plus /> </el-icon>
+                </div>
+                <div v-if="category.product" class="hover-overlay">
+                  <el-icon @click="removeProduct(category)">
                     <Delete />
                   </el-icon>
                 </div>
@@ -71,20 +31,50 @@
           <el-tag v-for="tag in outfitTags" :key="tag" class="tag-color" size="small">{{ tag }}</el-tag>
         </el-card>
       </el-col>
+
       <el-col :span="12" class="right-col">
-        Clothing Options
+        <el-tabs class="demo-tabs" type="card" style="margin-left: 20px; width: 100%">
+          <el-tab-pane label="My Closet">
+            <el-input
+              v-model="input"
+              style="width: 100%; margin-bottom: 10px"
+              placeholder="Search Clothes"
+              :prefix-icon="Search"
+            />
+            <div class="product-images" style="height: 510px; overflow-y: auto;">
+              <el-space
+                fill
+                wrap
+                :fill-ratio="30"
+                direction="horizontal"
+                style="width: 100%"
+              >
+              <div v-for="product in filteredClothes" :key="product.ProductID" class="image-item" @click="addProduct(product)">
+                <el-card>
+                  <el-image :src="product.image_url" fit="contain"/>
+                  <div class="font">{{ product.productDisplayName }}</div>
+                </el-card>
+              </div>
+              </el-space>
+            </div>
+          </el-tab-pane>
+        </el-tabs>
       </el-col>
+
     </el-row>
     <div class="edit-footer">
-      <el-button class="cancel-button" @click="closeEdit">Cancel</el-button>
-      <el-button class="confirm-button" primary @click="">Save</el-button>
+      <el-button class="cancel-button" @click="closeEdit()">Cancel</el-button>
+      <el-button class="confirm-button" primary @click="uploadOutfit()">Save</el-button>
     </div>
   </el-dialog>
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted } from 'vue';
-import { ZoomIn, Delete } from '@element-plus/icons-vue'
+import { ref, onMounted, watch } from 'vue';
+import { ZoomIn, Delete, Plus, Search } from '@element-plus/icons-vue'
+import { ElNotification } from 'element-plus'
+const { $api } = useNuxtApp();
+import { useNuxtApp } from '#app';
 
 const props = defineProps<{
   edit: boolean;
@@ -121,36 +111,169 @@ type Category = {
   product: Product | null;
 };
 
-const categories = ref<Category[]>([
-  { name: 'Topwear', product: null },
-  { name: 'Bottomwear', product: null },
-  { name: 'Accessory', product: null },
-  { name: 'Footwear', product: null },
-]);
-
-const openEdit = ref(props.edit);
-const outfit = ref(props.selectedOutfit.products);
-const outfitTags = ref(props.selectedOutfit.true_tags);
+const clothes = ref<Product[]>([])
+const filteredClothes = ref<Product[]>([])
+const input = ref('')
 
 onMounted(() => {
   updateOutfitCategories();
+  getData();
 })
 
-const removeProduct = (category: any) => {
-  console.log(category);
-  // const category = categories.value.find(cat => cat.name === categoryName);
-  // if (category && category.product) {
-  //   outfit.value = outfit.value.filter(product => product.ProductID !== category.product.ProductID);
-  //   category.product = null;
-  //   updateTags();
-  // }
+const categories = ref<Category[]>([
+  { name: 'Topwear', product: null as Product | null },
+  { name: 'Bottomwear', product: null as Product | null },
+  { name: 'Accessory', product: null as Product | null },
+  { name: 'Footwear', product: null as Product | null },
+]);
+
+const categoryMapping = {
+  'Topwear': ['shirt', 'outerwear'],
+  'Bottomwear': ['pant'],
+  'Accessory': ['accessory'],
+  'Footwear': ['shoe'],
+}
+const selectedCategory = ref('')
+
+const openEdit = ref(props.edit);
+const outfit = ref(props.selectedOutfit?.products || []);
+const outfitTags = ref(props.selectedOutfit.true_tags);
+
+
+const selectTable = (name: string) => {
+  selectedCategory.value = name;
+  const subCategories = categoryMapping[name];
+
+  filteredClothes.value = clothes.value.filter((product: Product) => 
+    product.category && subCategories.includes(product.category.toLowerCase())
+  );
+}
+
+const addProduct = (product: Product) => {
+  const category = categories.value.find(cat => cat.name === selectedCategory.value);
+  if (category && !category.product) {
+    category.product = product;
+    outfit.value.push(product);
+    updateTags();
+  }
+}
+
+
+const uploadOutfit = async () => {
+  if (outfit.value.length !== 4) {
+    ElNotification({
+      title: 'Error',
+      message: 'Please fill in all the items!',
+      type: 'error',
+    });
+    return;
+  }
+  
+  const outfitData: any = {
+    outfit: {}
+  };
+
+  const outfitId = props.selectedOutfit?.outfit_id || null;
+  if (outfitId) {
+    outfitData.outfit.outfit_id = outfitId;
+  }
+
+  categories.value.forEach(category => {
+    const product = category.product;
+
+    if (product) {
+      const productId = product.ProductID;
+      const productCategory = product.category.toLowerCase();
+
+      switch (productCategory) {
+        case 'shirt':
+        case 'outerwear':
+          outfitData.outfit.shirt_id = productId;
+          break;
+        case 'pant':
+          outfitData.outfit.pant_id = productId;
+          break;
+        case 'accessory':
+          outfitData.outfit.accessory_id = productId;
+          break;
+        case 'shoe':
+          outfitData.outfit.shoe_id = productId;
+          break;
+        case 'dress':
+          outfitData.outfit.dress_id = productId;
+          break;
+        default:
+          break;
+      }
+    }
+  });
+
+  try {
+    const response = await $api.post('/save-outfit', outfitData);
+
+    if (response.status === 200) {
+      ElNotification({
+        title: 'Success',
+        message: `Outfit saved successfully!`,
+        type: 'success',
+      });
+      openEdit.value = false;
+      categories.value.forEach(category => category.product = null);
+    }
+  } catch (error) {
+    console.error('Error uploading outfit:', error);
+  }
+}
+
+const getData = async () => {
+  try {
+    const response = await $api.get('/user/20/products');
+
+    clothes.value = response.data.products.map((product: any) => ({
+      ProductID: product.ProductID,
+      articleType: product.articleType,
+      baseColour: product.baseColour,
+      category: product.category,
+      favorite: product.favorite,
+      gender: product.gender,
+      image_url: product.image_url,
+      masterCategory: product.masterCategory,
+      price: product.price,
+      productDisplayName: product.productDisplayName,
+      season_style: product.season_style,
+      subCategory: product.subCategory,
+      usage: product.usage,
+      year: product.year,
+    }))
+    filteredClothes.value = clothes.value;
+  } catch (error) {
+    console.error('Error fetching products:', error);
+  }
+}
+
+
+const removeProduct = (category: Category) => {
+  if (category.product) {
+    const productIndex = outfit.value.findIndex(
+      (product: Product) => product.ProductID === category.product!.ProductID
+    );
+
+    if (productIndex !== -1) {
+      outfit.value.splice(productIndex, 1);
+    }
+    category.product = null;
+    updateTags();
+  }
 };
 
 const updateOutfitCategories = () => {
   categories.value.forEach(category => category.product = null);
 
+  if (outfit.value.length === 0) {
+    return;
+  }
+
   outfit.value.forEach((product: Product) => {
-    console.log(product);
     switch (product.category.toLowerCase()) {
       case 'shirt':
         categories.value.find(cat => cat.name === 'Topwear')!.product = product; 
@@ -190,6 +313,18 @@ const closeEdit = () => {
   openEdit.value = false;
 };
 
+const handleClose = (done: () => void) => {
+  if (outfit.value.length === 4) {
+    done();
+  } else {
+    ElNotification({
+    title: 'Error',
+    message: 'Please fill in all the items!',
+    type: 'error',
+    })
+  }
+}
+
 const emit = defineEmits<{ (event: 'close'): void }>();
 
 const emitCloseEvent = () => {
@@ -197,9 +332,40 @@ const emitCloseEvent = () => {
     emit('close');
   }, 300);
 };
+
+watch(input, (newInput) => {
+  filteredClothes.value = clothes.value.filter((product: Product) => 
+    product.productDisplayName.toLowerCase().includes(newInput.toLowerCase())
+  );
+});
 </script>
 
 <style>
+.font {
+  color: var(--third-color);
+  letter-spacing: 1px;
+  font-size: 7px;
+  font-weight: 350; 
+}
+.product-images {
+  display: flex;
+  flex-direction: column;
+}
+
+.image-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.el-card {
+  width: 100%;
+}
+
+.el-image {
+  width: 100%;
+  height: 150px;
+}
 .edit-box {
   background-color: var(--secondary-color);
 }
@@ -231,9 +397,12 @@ const emitCloseEvent = () => {
   transition: border-color 0.3s;
 }
 
+.upload-mimic.selected {
+  border-color: var(--primary-color);
+}
+
 .upload-mimic:hover {
   border-color: var(--primary-color);
-  /* Highlight border on hover */
 }
 
 .product-image {

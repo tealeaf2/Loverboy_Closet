@@ -1,5 +1,5 @@
 <template>
-  <el-drawer class="desc" v-model="drawer" title="I am the title" :with-header="false" @close="emitCloseEvent">
+  <el-drawer v-if="selectedItem" class="desc" v-model="drawer" title="I am the title" :with-header="false" @close="emitCloseEvent">
     <el-card class="card">
       <img :src="selectedItem.image_url" />
       <p>{{ selectedItem.productDisplayName }}</p>
@@ -28,6 +28,7 @@ interface Product {
   ProductID: number;
   articleType: string;
   baseColour: string;
+  category: string;
   favorite: boolean;
   gender: string;
   image_url: string;

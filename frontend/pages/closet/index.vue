@@ -113,6 +113,7 @@ interface Product {
   articleType: string;
   baseColour: string;
   favorite: boolean;
+  category: string;
   gender: string;
   image_url: string;
   masterCategory: string;
@@ -135,9 +136,12 @@ interface Product {
 const clothes = ref<Product[]>([]);
 const categoryMapping = {
   '0': 'All',
-  '1': 'Apparel',
-  '2': 'Footwear',
-  '3': 'Accessories'
+  '1': 'shirt',
+  '2': 'pant',
+  '3': 'accessory',
+  '4': 'shoe',
+  '5': 'outerwear',
+  '6': 'dress',
 };
 
 const filterTableData = computed(() =>
@@ -186,7 +190,7 @@ const addProducts = async () => {
         usage: product.usage,
         year: product.year,
       })),
-    });
+    })
     clothes.value = [...clothes.value, ...selectedItems.value];
     console.log('Products added successfully:', response.data);
 
@@ -236,6 +240,7 @@ const getData = async () => {
       ProductID: product.ProductID,
       articleType: product.articleType,
       baseColour: product.baseColour,
+      category: product.category,
       favorite: product.favorite,
       gender: product.gender,
       image_url: product.image_url,
@@ -260,7 +265,7 @@ const filteredClothes = computed(() => {
   }
 
   return clothes.value
-    .filter(product => categoryMapping[selectedTab.value] === product.masterCategory)
+    .filter(product => categoryMapping[selectedTab.value] === product.category)
     .filter(product =>
       product.productDisplayName.toLowerCase().includes(searchQuery.value.toLowerCase())
     );
