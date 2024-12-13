@@ -1,10 +1,10 @@
 <template>
-  <el-drawer class="desc" v-model="drawer" title="I am the title" :with-header="false" @close="emitCloseEvent">
+  <el-drawer v-if="selectedItem" class="desc" v-model="drawer" title="I am the title" :with-header="false" @close="emitCloseEvent">
     <el-card class="card">
       <img :src="selectedItem.image_url" />
       <p>{{ selectedItem.productDisplayName }}</p>
       <template #footer>
-        <div class="content">
+        <div class="detail">
           <el-descriptions direction="vertical" :column="1">
             <el-descriptions-item label="Type:">{{ selectedItem.articleType }}</el-descriptions-item>
             <el-descriptions-item label="Usage:">{{ selectedItem.usage }}</el-descriptions-item>
@@ -22,12 +22,13 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, defineProps, computed } from 'vue';
+import { ref, computed } from 'vue';
 
 interface Product {
   ProductID: number;
   articleType: string;
   baseColour: string;
+  category: string;
   favorite: boolean;
   gender: string;
   image_url: string;
@@ -95,7 +96,7 @@ const emitCloseEvent = () => {
   color: var(--third-color);
 }
 
-.content {
+.detail {
   background-color: var(--secondary-color) !important;
   width: 100%;
 }

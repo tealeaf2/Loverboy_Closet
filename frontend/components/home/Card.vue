@@ -1,5 +1,5 @@
 <script setup>
-  import { ref,defineProps } from 'vue'; 
+  import { ref } from 'vue'; 
   // important!!!! import ref every time, or nothing shows up!!!!!
   const isFlipped= ref(false);
   function flip(){
