@@ -13,6 +13,10 @@
       <div class="pic">
         <img :src="item.image_url" alt="">
       </div>
+      <div class="star-icon" @click="toggleFavorite(item)">
+        <el-icon v-if="!item.favorite"><Star /></el-icon>
+        <el-icon v-else class="selected"><StarFilled/></el-icon>
+      </div>
       <div class="info">
         <strong>{{ item.productDisplayName }}</strong>
         <div class="buttons">
@@ -77,7 +81,7 @@ const selectedTab = ref<string>('');
 const { $api, $authApi } = useNuxtApp()
 const searchQuery = ref('');
 import { ComponentSize, ElNotification, ElLoading } from 'element-plus'
-import { Search } from '@element-plus/icons-vue'
+import { Search, Star, StarFilled } from '@element-plus/icons-vue'
 
 definePageMeta({
   middleware: [
@@ -103,6 +107,23 @@ const background = ref(false)
 const disabled = ref(false)
 const input = ref('')
 const loading = ref(true)
+
+const toggleFavorite = (item: Product) => {
+  item.favorite = !item.favorite;
+  updateFavorite(item);
+};
+
+const updateFavorite = async (item: Product) => {
+  try {
+    const response = await $authApi.put(`/toggle-favorite/products/${item.ProductID}`);
+    if (response.status === 200) {
+      console.log('Favorite toggled successfully:', response.data);
+    } 
+  } 
+  catch (error) {
+    console.error('Error updating:', error);
+  }
+};
 
 const toggleForm = (item: Product) => {
   selectedItem.value = item;
@@ -141,13 +162,14 @@ interface Product {
 
 const clothes = ref<Product[]>([]);
 const categoryMapping = {
-  '0': 'All',
-  '1': 'shirt',
-  '2': 'pant',
-  '3': 'accessory',
-  '4': 'shoe',
-  '5': 'outerwear',
-  '6': 'dress',
+  '0': 'Favorite',
+  '1': 'All',
+  '2': 'shirt',
+  '3': 'pant',
+  '4': 'accessory',
+  '5': 'shoe',
+  '6': 'outerwear',
+  '7': 'dress',
 };
 
 const filterTableData = computed(() =>
@@ -264,8 +286,14 @@ const getData = async () => {
 }
 
 const filteredClothes = computed(() => {
-  if (!selectedTab.value || selectedTab.value === '0') {
+  if (!selectedTab.value || selectedTab.value === '1') {
     return clothes.value.filter(product =>
+      product.productDisplayName.toLowerCase().includes(searchQuery.value.toLowerCase())
+    );
+  }
+  else if (selectedTab.value == '0'){
+    return clothes.value.filter(product =>
+      product.favorite &&
       product.productDisplayName.toLowerCase().includes(searchQuery.value.toLowerCase())
     );
   }
@@ -302,6 +330,17 @@ const deleteItem = async (productID: number) => {
 
 * {
   box-sizing: border-box;
+}
+
+.selected {
+  color: var(--primary-color)
+}
+
+.star-icon {
+  position: absolute;
+  top: 10px; 
+  right: 10px;
+  z-index: 1;
 }
 
 .shell {

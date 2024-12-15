@@ -19,6 +19,31 @@ def get_user_from_token():
         return None, jsonify({"error": f"Invalid token: {str(e)}"})
 
 
+@closet_bp.route('/api/toggle-favorite/products/<int:prod_id>', methods=['PUT'])
+def toggle_favorite_product(prod_id):
+    user_id, error_response = get_user_from_token()
+    if error_response:
+        return error_response
+    
+    try:
+        subscription = (
+            db.session.query(ProductSubscription)
+            .filter_by(user_id=user_id, product_id=prod_id)
+            .first()
+        )
+
+        if not subscription:
+            return jsonify({"error": "Subscription not found"}), 404
+        
+        subscription.product.favorite = not subscription.product.favorite 
+        db.session.commit()
+
+        return jsonify({"message": "Favorite toggled successfully"}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 @closet_bp.route('/api/user/products', methods=['GET'])
 def get_user_products():
     user_id, error_response = get_user_from_token()
