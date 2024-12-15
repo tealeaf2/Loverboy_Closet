@@ -2,13 +2,30 @@
 from flask import Blueprint, jsonify, request
 from app.model import Outfit, Product, OutfitSubscription
 from app import db
+from app.auth_utils import decode_token
 
 recommend_bp = Blueprint('recommend', __name__)
 
+def get_user_from_token():
+    """Helper function to extract user_id from the Authorization header."""
+    auth_header = request.headers.get('Authorization')
+    if not auth_header or not auth_header.startswith("Bearer "):
+        return None, jsonify({"error": "Authorization token missing or invalid"})
+
+    token = auth_header.split(" ")[1]  # Extract token from "Bearer <token>"
+    try:
+        user_id = decode_token(token)  # Assume `decode_token` returns the user_id from the token
+        return user_id, None
+    except Exception as e:
+        return None, jsonify({"error": f"Invalid token: {str(e)}"})
+    
+
 @recommend_bp.route('/api/outfits', methods=['GET'])
 def get_all_outfits():
+    user_id, error_response = get_user_from_token()
+    if error_response:
+        return error_response
     try:
-        user_id = 20
         if not user_id:
             return jsonify({"error": "User ID is required"}), 400
 
@@ -24,13 +41,16 @@ def get_all_outfits():
         for outfit in outfits:
             product_categories = ['shirt', 'pant', 'accessory', 'shoe', 'outerwear', 'dress']
             products_info = []
-            true_tags = set()  
+            true_tags = set()
             total_price = 0
+            favorited_items_count = 0  # Counter for favorited items
 
             for category in product_categories:
                 product_obj = getattr(outfit, category)
                 if product_obj:
                     total_price += product_obj.price
+                    if product_obj.favorite:
+                        favorited_items_count += 1  # Increment if the product is favorited
 
                     season_style_dict = (
                         {
@@ -76,12 +96,14 @@ def get_all_outfits():
                 "subscribe_count": outfit.subscribe_count,
                 "total_price": round(total_price, 2),  # Include total price and round to 2 decimals
                 "products": products_info,
-                "true_tags": list(true_tags)  # Include only the tags that are True
+                "true_tags": list(true_tags),  # Include only the tags that are True
+                "favorited_items_count": favorited_items_count  # Include the count of favorited items
             }
 
             result.append(outfit_data)
 
-        result.sort(key=lambda x: x.get('subscribe_count', 0), reverse=True)
+        # Sort by favorited items count first, then by subscribe count
+        result.sort(key=lambda x: (x['favorited_items_count'], x.get('subscribe_count', 0)), reverse=True)
 
         return jsonify({"outfits": result}), 200
 
@@ -95,10 +117,12 @@ def save_outfit():
     data = request.json
 
     # Validate required fields
-    if 'user_id' not in data or 'outfit_id' not in data:
-        return jsonify({'error': 'Missing user_id or outfit_id'}), 400
+    if 'outfit_id' not in data:
+        return jsonify({'error': 'Missing outfit_id'}), 400
 
-    user_id = data['user_id']
+    user_id, error_response = get_user_from_token()
+    if error_response:
+        return error_response
     outfit_id = data['outfit_id']
 
     try:

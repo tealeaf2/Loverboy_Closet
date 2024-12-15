@@ -1,5 +1,20 @@
 <script setup>
+import { ref, onMounted } from 'vue';
 
+const isAuthenticated = ref(false);
+
+onMounted(() => {
+  if (process.client) {
+    const token = localStorage.getItem('token');
+    isAuthenticated.value = !!token;
+  }
+});
+
+const handleSignOut = () => {
+  localStorage.removeItem('token');
+  isAuthenticated.value = false;
+  window.location.href = '/';
+};
 </script>
 
 <template>
@@ -34,11 +49,9 @@
 
     <template #extra>
       <div class="buttons">
-        <NuxtLink to="/login">
-          <el-button class="login-button">login</el-button>
-        </NuxtLink>
-        <NuxtLink to="/login">
-          <el-button class="sign-up-button">sign up</el-button>
+        <el-button v-if="isAuthenticated" class="login-button" @click="handleSignOut" style="margin-right: 10px;">Sign Out</el-button>
+        <NuxtLink v-else to="/login" style="margin-right: 10px;">
+          <el-button class="sign-up-button">Login</el-button>
         </NuxtLink>
       </div>
     </template>

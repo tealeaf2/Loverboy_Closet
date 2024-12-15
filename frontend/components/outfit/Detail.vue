@@ -28,7 +28,7 @@
 
 <script lang="ts" setup>
 import { ref, computed, onMounted } from 'vue'
-const { $api } = useNuxtApp()
+const { $api, $authApi } = useNuxtApp()
 import { useNuxtApp } from '#app';
 import { Plus, Minus } from '@element-plus/icons-vue'
 import { ElNotification } from 'element-plus';
@@ -47,7 +47,7 @@ const outfit = ref(props.selectedOutfit);
 const deleteProduct = async (product: any) => {
   const user = 20;
   try {
-    const response = await $api.delete(`/user/${user}/products/${product.ProductID}`);
+    const response = await $authApi.delete(`/user/products/${product.ProductID}`);
     if (response.status === 200) {
       console.log(`Product ${product.ProductID} successfully removed from user ${user}`);
       product.is_subscribed = false;
@@ -61,7 +61,7 @@ const deleteProduct = async (product: any) => {
 
 const addProduct = async (product: any) => {
   try {
-    const response = await $api.post('/products', {
+    const response = await $authApi.post('/products', {
       products: [
         {
           ProductID: product.ProductID,
@@ -96,7 +96,7 @@ const addProduct = async (product: any) => {
 
 const checkOutfit = async() => {
   try {
-    const response = await $api.get(`/check-outfit/${outfit.value.outfit_id}`);
+    const response = await $authApi.get(`/check-outfit/${outfit.value.outfit_id}`);
     outfit.value = response.data.outfits;
 
   } catch (error) {

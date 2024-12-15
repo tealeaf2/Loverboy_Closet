@@ -13,5 +13,6 @@ class Config:
         database=os.getenv('MYSQL_DB')
         
         SQLALCHEMY_DATABASE_URI = f'mysql+pymysql://{user}:{password}@{host}/{database}'
-
+    
+    JWT_SECRET_KEY = 'abcd'
     SQLALCHEMY_TRACK_MODIFICATIONS = False

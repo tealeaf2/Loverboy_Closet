@@ -26,10 +26,13 @@ keyword_categories = {
     "dresses": [r'\b\w*dress\w*\b', r'\b\w*saree\w*\b']
 }
 
-def get_category(row):
+def get_category(article_type):
+    """
+    Determines the category of a product based on its articleType.
+    """
     for category, patterns in keyword_categories.items():
         for pattern in patterns:
-            if any(re.search(pattern, field, re.IGNORECASE) for field in row):
+            if re.search(pattern, article_type, re.IGNORECASE):
                 return category
     return None
 
@@ -107,7 +110,7 @@ def insert_data_from_csv(csv_file_path):
             db.session.add(season_style)
 
             # Determine category and insert into corresponding table
-            category = get_category(row)
+            category = get_category(articleType)
             if category == "shirts":
                 shirt = Shirt(ProductID=product.ProductID, Material=random_material())
                 db.session.add(shirt)

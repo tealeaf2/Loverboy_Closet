@@ -73,7 +73,7 @@
 import { ref, onMounted, watch } from 'vue';
 import { ZoomIn, Delete, Plus, Search } from '@element-plus/icons-vue'
 import { ElNotification } from 'element-plus'
-const { $api } = useNuxtApp();
+const { $api, $authApi } = useNuxtApp();
 import { useNuxtApp } from '#app';
 
 const props = defineProps<{
@@ -209,7 +209,7 @@ const uploadOutfit = async () => {
   });
 
   try {
-    const response = await $api.post('/save-outfit', outfitData);
+    const response = await $authApi.post('/save-outfit', outfitData);
 
     if (response.status === 200) {
       ElNotification({
@@ -227,7 +227,7 @@ const uploadOutfit = async () => {
 
 const getData = async () => {
   try {
-    const response = await $api.get('/user/20/products');
+    const response = await $authApi.get('/user/products');
 
     clothes.value = response.data.products.map((product: any) => ({
       ProductID: product.ProductID,

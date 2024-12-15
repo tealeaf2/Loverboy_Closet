@@ -1,11 +1,29 @@
 from flask import Blueprint, jsonify, request
 from app.model import Product, SeasonStyle, ProductSubscription
 from app import db
+from app.auth_utils import decode_token  # Utility function to decode tokens
 
 closet_bp = Blueprint('closet', __name__)
 
-@closet_bp.route('/api/user/<int:user_id>/products', methods=['GET'])
-def get_user_products(user_id):
+def get_user_from_token():
+    """Helper function to extract user_id from the Authorization header."""
+    auth_header = request.headers.get('Authorization')
+    if not auth_header or not auth_header.startswith("Bearer "):
+        return None, jsonify({"error": "Authorization token missing or invalid"})
+
+    token = auth_header.split(" ")[1]  # Extract token from "Bearer <token>"
+    try:
+        user_id = decode_token(token)  # Assume `decode_token` returns the user_id from the token
+        return user_id, None
+    except Exception as e:
+        return None, jsonify({"error": f"Invalid token: {str(e)}"})
+
+
+@closet_bp.route('/api/user/products', methods=['GET'])
+def get_user_products():
+    user_id, error_response = get_user_from_token()
+    if error_response:
+        return error_response
     try:
         # Predefined product categories
         product_categories = ['shirt', 'pant', 'accessory', 'shoe', 'outerwear', 'dress']
@@ -50,10 +68,12 @@ def get_user_products(user_id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@closet_bp.route('/api/user/products/<int:product_id>', methods=['DELETE'])
+def delete_user_product(product_id):
+    user_id, error_response = get_user_from_token()
+    if error_response:
+        return error_response
 
-
-@closet_bp.route('/api/user/<int:user_id>/products/<int:product_id>', methods=['DELETE'])
-def delete_user_product(user_id, product_id):
     try:
         # Query to find the product subscription record between the user and the product
         subscription = (
@@ -74,7 +94,7 @@ def delete_user_product(user_id, product_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
-    
+
 @closet_bp.route('/api/products', methods=['GET'])
 def get_all_products():
     try:
@@ -113,7 +133,10 @@ def get_all_products():
 
 @closet_bp.route('/api/products', methods=['POST']) 
 def add_products_user():
-    user_id = 20
+    user_id, error_response = get_user_from_token()
+    if error_response:
+        return error_response
+
     try:
         # Get the payload from the request
         data = request.get_json()
