@@ -18,9 +18,12 @@ export default defineNuxtConfig({
   ],
   plugins: [
     '~/plugins/api.js',
+    '~/plugins/authApi.js',
     '~/plugins/element-plus.js', 
   ],
-
+  router: {
+    middleware: ['auth']
+  },
   runtimeConfig: {
     public: {
       baseURL: process.env.BASE_URL || 'http://127.0.0.1:5000',

@@ -1,8 +1,11 @@
 <script setup>
 import { ref } from 'vue';
+import { useRouter } from 'vue-router'
+const router = useRouter()
+
 const scrollTarget = ref(null)
 function schrollDown(){
-  scrollTarget.value.scrollIntoView({ behavior: "smooth" , block: 'end'});
+  router.push('/closet');
 }
 </script>
   

@@ -1,8 +1,22 @@
 from flask import Blueprint, jsonify, request
 from app.model import Outfit, Product, OutfitSubscription, ProductSubscription, User
 from app import db
+from app.auth_utils import decode_token
 
 outfits_bp = Blueprint('outfits', __name__)
+
+def get_user_from_token():
+    """Helper function to extract user_id from the Authorization header."""
+    auth_header = request.headers.get('Authorization')
+    if not auth_header or not auth_header.startswith("Bearer "):
+        return None, jsonify({"error": "Authorization token missing or invalid"})
+
+    token = auth_header.split(" ")[1]  # Extract token from "Bearer <token>"
+    try:
+        user_id = decode_token(token)  # Assume `decode_token` returns the user_id from the token
+        return user_id, None
+    except Exception as e:
+        return None, jsonify({"error": f"Invalid token: {str(e)}"})
 
 @outfits_bp.route('/api/outfits/<int:outfit_id>', methods=['DELETE'])
 def delete_outfit(outfit_id):
@@ -20,9 +34,12 @@ def delete_outfit(outfit_id):
         return jsonify({'error': str(e)}), 500
 
 
-@outfits_bp.route('/api/user/<int:user_id>/outfits', methods=['GET'])
-def get_user_outfits(user_id):
-    user_id = 20
+@outfits_bp.route('/api/user/outfits', methods=['GET'])
+def get_user_outfits():
+    user_id, error_response = get_user_from_token()
+    if error_response:
+        return error_response
+    
     try:
         outfits = db.session.query(Outfit).filter_by(user_id=user_id).all()
 
@@ -102,7 +119,9 @@ def get_user_outfits(user_id):
 
 @outfits_bp.route('/api/subscribed-outfits', methods=['GET'])
 def get_subscribed_outfits():
-    user_id = 20
+    user_id, error_response = get_user_from_token()
+    if error_response:
+        return error_response
     try:
         subscriptions = db.session.query(OutfitSubscription).filter_by(user_id=user_id).all()
 
@@ -184,7 +203,9 @@ def unsave_outfit():
     # if 'user_id' not in data or 'outfit_id' not in data:
     #     return jsonify({'error': 'Missing user_id or outfit_id'}), 400
 
-    user_id = 20
+    user_id, error_response = get_user_from_token()
+    if error_response:
+        return error_response
     outfit_id = data['outfit_id']
 
     try:
@@ -212,7 +233,9 @@ def unsave_outfit():
 
 @outfits_bp.route('/api/check-outfit/<int:outfit_id>', methods=['GET'])
 def get_products_of_outfit(outfit_id):
-    user_id = 20
+    user_id, error_response = get_user_from_token()
+    if error_response:
+        return error_response
     try:
         outfit = db.session.query(Outfit).filter_by(outfit_id=outfit_id).first()
 
@@ -280,7 +303,9 @@ def get_products_of_outfit(outfit_id):
     
 @outfits_bp.route('/api/save-outfit', methods=['POST'])
 def add_save_outfit():
-    user_id = 20
+    user_id, error_response = get_user_from_token()
+    if error_response:
+        return error_response
     try:
         # Get the payload from the request
         data = request.get_json()

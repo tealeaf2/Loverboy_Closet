@@ -66,7 +66,7 @@
 <script lang="ts" setup>
 import { onMounted, ref, computed } from 'vue'
 import options from './options'
-const { $api } = useNuxtApp()
+const { $api, $authApi } = useNuxtApp()
 import { useNuxtApp } from '#app';
 import { ElNotification, ComponentSize } from 'element-plus'
 
@@ -77,6 +77,12 @@ const selectedProducts = ref<any[]>([]);
 const currentPage = ref(1)
 const pageSize = ref(15);
 const size = ref<ComponentSize>('default')
+
+definePageMeta({
+  middleware: [
+    'auth'
+  ]
+});
 
 onMounted(() => {
   getRecommendations();
@@ -109,7 +115,7 @@ const saveOutfit = async (outfit: any) => {
       outfit_id: outfit.outfit_id
     };
 
-    const response = await $api.post('/save_outfit', payload);
+    const response = await $authApi.post('/save_outfit', payload);
     getRecommendations();
     ElNotification({
       title: 'Success',
@@ -142,7 +148,7 @@ const filteredOutfits = computed(() => {
 
 const getRecommendations = async () => {
   try {
-    const response = await $api.get('/outfits');
+    const response = await $authApi.get('/outfits');
     const outfits = response.data.outfits;
 
     if (outfits && outfits.length > 0) {

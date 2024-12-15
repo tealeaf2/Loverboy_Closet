@@ -74,10 +74,16 @@
 import { ref, onMounted, computed } from 'vue';
 import { useNuxtApp } from '#app';
 const selectedTab = ref<string>('');
-const { $api } = useNuxtApp()
+const { $api, $authApi } = useNuxtApp()
 const searchQuery = ref('');
 import { ComponentSize, ElNotification, ElLoading } from 'element-plus'
 import { Search } from '@element-plus/icons-vue'
+
+definePageMeta({
+  middleware: [
+    'auth'
+  ]
+});
 
 onMounted(() => {
   getData();
@@ -174,7 +180,7 @@ const addProducts = async () => {
   const payload = selectedItems.value;
   
   try {
-    const response = await $api.post('/products', {
+    const response = await $authApi.post('/products', {
       products: payload.map((product: Product) => ({
         ProductID: product.ProductID,
         articleType: product.articleType,
@@ -234,7 +240,7 @@ const getAllClothes = async () => {
 
 const getData = async () => {
   try {
-    const response = await $api.get('/user/20/products');
+    const response = await $authApi.get('/user/products');
 
     clothes.value = response.data.products.map((product: any) => ({
       ProductID: product.ProductID,
@@ -274,7 +280,7 @@ const filteredClothes = computed(() => {
 const deleteItem = async (productID: number) => {
   const user = 20;
   try {
-    const response = await $api.delete(`/user/${user}/products/${productID}`);
+    const response = await $authApi.delete(`/user/products/${productID}`);
     if (response.status === 200) {
       console.log(`Product ${productID} successfully removed from user ${user}`);
       clothes.value = clothes.value.filter(product => product.ProductID !== productID);

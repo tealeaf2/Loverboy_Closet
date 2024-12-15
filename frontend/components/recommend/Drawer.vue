@@ -25,7 +25,7 @@ import { ref, computed } from 'vue';
 import { Edit } from '@element-plus/icons-vue'
 import { useNuxtApp } from '#app';
 import { ElNotification } from 'element-plus';
-const { $api } = useNuxtApp()
+const { $api, $authApi } = useNuxtApp()
 const props = defineProps<{
   drawer: boolean;
   selectedProducts: any;
@@ -42,7 +42,7 @@ const emitCloseEvent = () => {
 
 const addProduct = async (product: any) => {
   try {
-    const response = await $api.post('/products', {
+    const response = await $authApi.post('/products', {
       products: [
         {
           ProductID: product.ProductID,

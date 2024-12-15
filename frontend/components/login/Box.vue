@@ -1,24 +1,26 @@
-<script setup>
-import { ref } from 'vue';
-
-  const isActive= ref(false)
-  function toggle(){
-    isActive.value=!isActive.value
-  }
-</script>
-  
 <template>
-  <div class="container" :class="{active:isActive}">
+  <div class="container" :class="{ active: isActive }">
+    <!-- Login Form -->
     <div class="form-box login">
-      <form action="">
+      <form @submit="handleLogin">
         <h1>Login</h1>
         <div class="input-box">
-          <input type="text" placeholder="Username" required>
-          <i class='bx bxs-user'></i>
+          <input
+            type="email"
+            placeholder="Email"
+            v-model="email"
+            required
+          />
+          <i class="bx bxs-user"></i>
         </div>
         <div class="input-box">
-          <input type="password" placeholder="Password" required>
-          <i class='bx bxs-lock-alt'></i>
+          <input
+            type="password"
+            placeholder="Password"
+            v-model="password"
+            required
+          />
+          <i class="bx bxs-lock-alt"></i>
         </div>
         <div class="forgot-link">
           <a href="#">Forgot password?</a>
@@ -26,26 +28,43 @@ import { ref } from 'vue';
         <button type="submit" class="btn">Login</button>
       </form>
     </div>
+
+    <!-- Register Form -->
     <div class="form-box register">
-      <form action="">
+      <form @submit="handleRegister">
         <h1>Registration</h1>
         <div class="input-box">
-          <input type="text" placeholder="Username" required>
-          <i class='bx bxs-user'></i>
+          <input
+            type="email"
+            placeholder="Email"
+            v-model="email"
+            required
+          />
+          <i class="bx bxs-user"></i>
         </div>
         <div class="input-box">
-          <input type="password" placeholder="Password" required>
-          <i class='bx bxs-lock-alt'></i>
+          <input
+            type="password"
+            placeholder="Password"
+            v-model="password"
+            required
+          />
+          <i class="bx bxs-lock-alt"></i>
         </div>
         <div class="input-box">
-          <input type="password" placeholder="Confirm" required>
-          <i class='bx bxs-lock-alt'></i>
+          <input
+            type="password"
+            placeholder="Confirm Password"
+            v-model="confirmPassword"
+            required
+          />
+          <i class="bx bxs-lock-alt"></i>
         </div>
-
         <button type="submit" class="btn">Register</button>
       </form>
     </div>
 
+    <!-- Toggle Panel -->
     <div class="toggle-box">
       <div class="toggle-panel toggle-left">
         <h1>Loverboy!</h1>
@@ -63,6 +82,75 @@ import { ref } from 'vue';
 
   <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
 </template>
+
+<script setup>
+import { ref } from 'vue';
+const { $api } = useNuxtApp()
+import { useNuxtApp } from '#app';
+import { ElNotification } from 'element-plus'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+const isActive = ref(false);
+const email = ref('');
+const password = ref('');
+const confirmPassword = ref('');
+const message = ref('');
+
+function toggle() {
+  isActive.value = !isActive.value;
+}
+
+// Handle login form submission
+async function handleLogin(event) {
+  event.preventDefault();
+  try {
+    const response = await $api.post('/login', {
+      email: email.value,
+      password: password.value,
+    });
+    const token = response.data.token;
+    if (token) {
+      localStorage.setItem('token', token);
+      message.value = `Login successful! Token: ${token}`;
+      router.push('/closet');
+    } else {
+      throw new Error('No token received');
+    }
+  } catch (error) {
+    message.value = error.response?.data?.message || 'Login failed!';
+    ElNotification({
+      title: 'Error',
+      message: `Login failed!`,
+      type: 'error',
+    }); 
+  }
+}
+
+// Handle register form submission
+async function handleRegister(event) {
+  event.preventDefault();
+  if (password.value !== confirmPassword.value) {
+    ElNotification({
+      title: 'Error',
+      message: `Passwords do not match!`,
+      type: 'error',
+    }); 
+    return;
+  }
+  try {
+    const response = await $api.post('/register', {
+      email: email.value,
+      password: password.value,
+    });
+    message.value = response.data.message || 'Registration successful!';
+
+    toggle();
+  } catch (error) {
+    message.value = error.response?.data?.message || 'Registration failed!';
+  }
+}
+</script>
 
 <style scoped>
   *{

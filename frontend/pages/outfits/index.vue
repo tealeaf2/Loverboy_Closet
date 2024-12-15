@@ -82,7 +82,7 @@
 
 <script lang="ts" setup>
 import { ref, onMounted } from "vue"
-const { $api } = useNuxtApp()
+const { $api, $authApi } = useNuxtApp()
 import { useNuxtApp } from '#app';
 import { ElNotification } from 'element-plus'
 import { View } from '@element-plus/icons-vue'
@@ -92,6 +92,12 @@ const subscribedOutfits = ref<any[]>([]);
 const selectedOutfit = ref<any[]>([]);
 const openDialog = ref(false);
 const openEdit = ref(false);
+
+definePageMeta({
+  middleware: [
+    'auth'
+  ]
+});
 
 onMounted(() => {
   getCreatedOutfits();
@@ -126,7 +132,7 @@ const closeForm = () => {
 
 const deleteOutfit = async(outfit_id: number) => {
   try {
-    const response = await $api.delete(`/outfits/${outfit_id}`)
+    const response = await $authApi.delete(`/outfits/${outfit_id}`)
 
     userOutfits.value = userOutfits.value.filter(outfit => outfit.outfit_id !== outfit_id);
     ElNotification({
@@ -142,8 +148,7 @@ const deleteOutfit = async(outfit_id: number) => {
 
 const unsaveOutfit = async(outfitId: number) => {
   try {
-    const response = await $api.post('/unsave_outfit', {
-      user_id: 20, // TODO: Replace
+    const response = await $authApi.post('/unsave_outfit', {
       outfit_id: outfitId
     });
     
@@ -163,7 +168,7 @@ const unsaveOutfit = async(outfitId: number) => {
 
 const getCreatedOutfits = async() => {
   try {
-    const response = await $api.get(`/user/20/outfits`);
+    const response = await $authApi.get(`/user/outfits`);
     userOutfits.value = response.data.outfits || []; 
   } catch (error) {
     console.error("Failed to fetch outfits:", error);
@@ -173,7 +178,7 @@ const getCreatedOutfits = async() => {
 
 const getSubscribedOutfits = async () => {
   try {
-    const response = await $api.get(`/subscribed-outfits`);
+    const response = await $authApi.get(`/subscribed-outfits`);
     subscribedOutfits.value = response.data.subscribed_outfits;
   } catch (error) {
     console.error("Failed to fetch subscribed outfits:", error);
