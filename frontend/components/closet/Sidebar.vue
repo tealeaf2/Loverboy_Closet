@@ -11,7 +11,8 @@ function handleTabClick(tab) {
 </script>
 
 <template>
-  <el-tabs v-model="activeTab" tab-position="left" style="height: 300px" class="demo-tabs container" @tab-click="handleTabClick">
+  <el-tabs v-model="activeTab" tab-position="left" style="height: 350px" class="demo-tabs container" @tab-click="handleTabClick">
+    <el-tab-pane label="Favorites"></el-tab-pane>
     <el-tab-pane label="All"></el-tab-pane>
     <el-tab-pane label="Shirts"></el-tab-pane>
     <el-tab-pane label="Pants"></el-tab-pane>
