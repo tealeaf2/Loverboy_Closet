@@ -76,12 +76,14 @@
 
 <script lang="ts" setup>
 import { ref, onMounted, computed } from 'vue';
-import { useNuxtApp } from '#app';
+import { useNuxtApp, useRuntimeConfig } from '#app';
 const selectedTab = ref<string>('');
 const { $api, $authApi } = useNuxtApp()
 const searchQuery = ref('');
 import { ComponentSize, ElNotification, ElLoading } from 'element-plus'
 import { Search, Star, StarFilled } from '@element-plus/icons-vue'
+
+const config = useRuntimeConfig();
 
 definePageMeta({
   middleware: [

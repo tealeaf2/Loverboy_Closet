@@ -1,5 +1,8 @@
 <script setup>
 import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 const isAuthenticated = ref(false);
 
@@ -13,7 +16,7 @@ onMounted(() => {
 const handleSignOut = () => {
   localStorage.removeItem('token');
   isAuthenticated.value = false;
-  window.location.href = '/';
+  router.push('/')
 };
 </script>
 
