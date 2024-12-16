@@ -1,26 +1,33 @@
 <script setup>
   import { computed, ref } from 'vue';
+  import { useRuntimeConfig } from '#app';
+  const config = useRuntimeConfig();
 
   const list= ref([
     {
-    photo:'/picture/photo1.jpg',
-    outfit:'/picture/outfit1.jpg'
+    photo:'picture/photo1.jpg',
+    outfit:'picture/outfit1.jpg'
     },
     {
-    photo:'/picture/photo2.jpg',
-    outfit:'/picture/outfit2.jpg'
+    photo:'picture/photo2.jpg',
+    outfit:'picture/outfit2.jpg'
     },
     {
-    photo:'/picture/photo3.jpg',
-    outfit:'/picture/outfit3.jpg'
+    photo:'picture/photo3.jpg',
+    outfit:'picture/outfit3.jpg'
     },
     {
-    photo:'/picture/photo4.jpg',
-    outfit:'/picture/outfit4.jpg'
+    photo:'picture/photo4.jpg',
+    outfit:'picture/outfit4.jpg'
     },
   ])
 
-  const dupList = computed(() => [...list.value, ...list.value])
+const dupList = computed(() =>
+  list.value.map(item => ({
+    photo: config.app.baseURL + item.photo,
+    outfit: config.app.baseURL + item.outfit,
+  }))
+);
 
 
 </script>
